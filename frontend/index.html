@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Microservices Portal</title>
+    <!-- Style Sheets -->
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container nav-bar">
+            <a href="#" class="logo" id="logo-link">
+                <i class="fa-solid px-1 fa-shopping-bag"></i> E-Shop<span>Amazon-Lite</span>
+            </a>
+
+            <!-- Search Container -->
+            <div class="search-container" id="search-bar-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" id="product-search" placeholder="Search for items, clothing, electronics...">
+            </div>
+
+            <!-- Nav Actions -->
+            <div class="nav-actions">
+                <a class="nav-link" id="nav-shop-btn"><i class="fa-solid fa-store"></i> Shop</a>
+                <a class="nav-link d-none" id="nav-user-orders-btn"><i class="fa-solid fa-clock-rotate-left"></i> My Orders</a>
+                <a class="nav-link d-none" id="nav-admin-btn"><i class="fa-solid fa-chart-line"></i> Admin Dashboard</a>
+                
+                <!-- Auth Badge -->
+                <div id="auth-status-container">
+                    <button class="btn btn-secondary" id="nav-login-btn"><i class="fa-solid fa-sign-in-alt"></i> Login</button>
+                </div>
+
+                <!-- Theme Switcher -->
+                <button class="theme-btn" id="theme-toggle-btn" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+
+                <!-- Shopping Cart Icon -->
+                <div class="cart-icon-container" id="cart-drawer-trigger">
+                    <i class="fa-solid fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cart-item-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Categories Tab Bar -->
+    <nav class="categories-bar" id="categories-nav">
+        <div class="container categories-container">
+            <button class="category-tab active" data-category="all">All Items</button>
+            <button class="category-tab" data-category="Fashion">Dress & Fashion</button>
+            <button class="category-tab" data-category="Electronics">Smart Appliances & Electronics</button>
+            <button class="category-tab" data-category="Furniture">Furnitures</button>
+            <button class="category-tab" data-category="Grocery">Groceries</button>
+            <button class="category-tab" data-category="Cosmetics">Skin Care & Cosmetics</button>
+            <button class="category-tab" data-category="Utensils">Kitchen Utensils</button>
+            <button class="category-tab" data-category="Footwear">Footwear</button>
+        </div>
+    </nav>
+
+    <!-- View: E-Commerce Storefront -->
+    <main class="container view-section" id="storefront-view">
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+            <div class="hero-content">
+                <p class="hero-tagline">Evaluate Your Intern Project</p>
+                <h1 class="hero-title">Amazon-Grade Microservice Frontend</h1>
+                <p class="hero-desc">Interact with FastAPI backends: Product, Order, Cart, Inventory, and Payment services with real-time logs.</p>
+                <button class="btn" id="hero-explore-btn">Start Shopping <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Section Title -->
+        <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 26px; font-weight: 700;">Featured Catalog</h2>
+            <span style="color: var(--text-secondary); font-size: 14px;" id="catalog-count-label">Loading products...</span>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="products-list-container">
+            <!-- Dynamic product cards will render here -->
+        </div>
+    </main>
+
+    <!-- View: Customer Orders History -->
+    <section class="container view-section d-none" id="user-orders-view">
+        <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 26px; font-weight: 700;"><i class="fa-solid fa-clock-rotate-left"></i> Your Purchase History</h2>
+            <span style="color: var(--text-secondary); font-size: 14px;" id="user-orders-count-label">0 orders placed</span>
+        </div>
+        <div id="user-orders-container" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Dynamic user orders will render here -->
+        </div>
+    </section>
+
+    <!-- View: Auth Login Panel -->
+    <section class="container view-section d-none" id="login-view">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h2 style="font-size: 28px; font-weight: 800;">Welcome Back</h2>
+                <p class="auth-subtitle">Choose your login profile below</p>
+            </div>
+
+            <!-- Login Select Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                <button class="btn btn-secondary btn-full active" id="tab-user-login" style="border-radius: 10px; border-color: var(--primary);">User Account</button>
+                <button class="btn btn-secondary btn-full" id="tab-admin-login" style="border-radius: 10px;">Admin Console</button>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="login-username">Username or Email</label>
+                    <input type="text" class="form-input" id="login-username" value="user123" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Password</label>
+                    <input type="password" class="form-input" id="login-password" value="password" required>
+                </div>
+                <button type="submit" class="btn btn-full" style="margin-top: 10px;">Login securely</button>
+            </form>
+            <p class="auth-footer-text" id="register-prompt">Don't have an account? <a href="#">Create account</a></p>
+        </div>
+    </section>
+
+    <!-- View: Admin Dashboard Console -->
+    <section class="container view-section d-none" id="admin-view">
+        <div class="admin-layout">
+            <!-- Sidebar Navigation -->
+            <aside class="admin-sidebar">
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <button class="sidebar-btn active" data-admin-panel="dashboard">
+                            <i class="fa-solid fa-chart-pie"></i> Stats Dashboard
+                        </button>
+                    </li>
+                    <li class="sidebar-item">
+                        <button class="sidebar-btn" data-admin-panel="products">
+                            <i class="fa-solid fa-box-open"></i> Products Catalog
+                        </button>
+                    </li>
+                    <li class="sidebar-item">
+                        <button class="sidebar-btn" data-admin-panel="inventory">
+                            <i class="fa-solid fa-cubes"></i> Inventory & Stock
+                        </button>
+                    </li>
+                    <li class="sidebar-item">
+                        <button class="sidebar-btn" data-admin-panel="orders">
+                            <i class="fa-solid fa-receipt"></i> Orders List
+                        </button>
+                    </li>
+                    <li class="sidebar-item">
+                        <button class="sidebar-btn" data-admin-panel="payments">
+                            <i class="fa-solid fa-credit-card"></i> Payments Ledger
+                        </button>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- Main Content Panels -->
+            <main class="admin-main">
+                <!-- Panel 1: Stats Dashboard -->
+                <div class="admin-panel-content" id="admin-panel-dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card revenue">
+                            <span class="stat-label">Total Revenue</span>
+                            <span class="stat-value glow-yellow" id="stat-revenue">$0.00</span>
+                            <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-up"></i> Real-time calculation</span>
+                        </div>
+                        <div class="stat-card orders">
+                            <span class="stat-label">Total Orders</span>
+                            <span class="stat-value glow-blue" id="stat-orders">0</span>
+                            <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-up"></i> From order-service</span>
+                        </div>
+                        <div class="stat-card stock">
+                            <span class="stat-label">Stock Status</span>
+                            <span class="stat-value" id="stat-low-stock" style="color: var(--warning);">0 Alerts</span>
+                            <span class="stat-trend" style="color: var(--text-secondary);">Items with stock &lt; 5</span>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Graph Card -->
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Microservice Performance Monitor</h3>
+                            <span class="badge badge-success">Online</span>
+                        </div>
+                        <div style="padding: 20px 0; text-align: center; color: var(--text-secondary);">
+                            <p style="margin-bottom: 10px;"><i class="fa-solid fa-network-wired" style="font-size: 32px; color: var(--primary);"></i></p>
+                            <p>Revenue updates dynamically using payment logs from <strong>payment-service</strong>.</p>
+                            <div style="margin-top: 15px; font-size: 14px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;" id="dashboard-recent-log">
+                                Waiting for transaction updates...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Product Catalog & Adding -->
+                <div class="admin-panel-content d-none" id="admin-panel-products">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="font-size: 20px; font-weight: 700;">Catalog Management</h3>
+                        <button class="btn" id="btn-show-add-product-modal"><i class="fa-solid fa-plus"></i> Add New Product</button>
+                    </div>
+                    
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Products List</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Product Name</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-products-rows">
+                                    <!-- Dynamic product rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 3: Inventory Stock Controls -->
+                <div class="admin-panel-content d-none" id="admin-panel-inventory">
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Inventory Status (Autonomous Update)</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Stock Quantity</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-inventory-rows">
+                                    <!-- Dynamic rows from product & inventory service -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 4: Orders Tracking -->
+                <div class="admin-panel-content d-none" id="admin-panel-orders">
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Customer Orders from order-service</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>User ID</th>
+                                        <th>Product Name</th>
+                                        <th>Qty</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Timestamp</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-orders-rows">
+                                    <!-- Dynamic order rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 5: Payments Tracking -->
+                <div class="admin-panel-content d-none" id="admin-panel-payments">
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Payments Ledger from payment-service</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Payment ID</th>
+                                        <th>Order ID</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Status</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-payments-rows">
+                                    <!-- Dynamic payment rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- Cart Slide-out Drawer -->
+    <div class="cart-drawer" id="cart-drawer-element">
+        <div class="cart-header">
+            <h3 class="cart-title">Your Cart</h3>
+            <button class="close-btn" id="cart-close-btn" style="position: static;"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items-container">
+            <!-- Dynamic cart items will render here -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-summary-row">
+                <span>Shipping</span>
+                <span>FREE</span>
+            </div>
+            <div class="cart-total-row">
+                <span>Total:</span>
+                <span id="cart-total-value">$0.00</span>
+            </div>
+            <button class="btn btn-full" id="checkout-trigger-btn">Proceed to Checkout <i class="fa-solid fa-credit-card"></i></button>
+        </div>
+    </div>
+
+    <!-- Modal: Product Details -->
+    <div class="modal-overlay" id="product-detail-modal">
+        <div class="modal-content">
+            <button class="close-btn" id="close-detail-modal"><i class="fa-solid fa-times"></i></button>
+            <div class="product-detail-layout" id="modal-detail-content">
+                <!-- Dynamic detail info -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Interactive Checkout / Payment Page -->
+    <div class="modal-overlay" id="checkout-modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <button class="close-btn" id="close-checkout-modal"><i class="fa-solid fa-times"></i></button>
+            <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 25px;">Secure Checkout</h2>
+
+            <div class="checkout-layout">
+                <!-- Shipping / Checkout Form -->
+                <div class="checkout-form-col">
+                    <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px;">Delivery Details</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="checkout-name">Full Name</label>
+                        <input type="text" class="form-input" id="checkout-name" value="Jane Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="checkout-address">Delivery Address</label>
+                        <input type="text" class="form-input" id="checkout-address" value="123 Main St, Singapore 189720" required>
+                    </div>
+
+                    <h3 style="font-size: 18px; font-weight: 700; margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px;">Payment Method</h3>
+                    
+                    <!-- Payment Tabs -->
+                    <div class="payment-method-selector">
+                        <button class="payment-tab active" data-pay-type="card"><i class="fa-solid fa-credit-card"></i> Card</button>
+                        <button class="payment-tab" data-pay-type="netbanking"><i class="fa-solid fa-building-columns"></i> NetBanking</button>
+                        <button class="payment-tab" data-pay-type="cod"><i class="fa-solid fa-hand-holding-dollar"></i> COD</button>
+                    </div>
+
+                    <!-- Payment Panels -->
+                    <!-- Card Details Form -->
+                    <div class="payment-details-panel" id="payment-panel-card">
+                        <div class="form-group">
+                            <label class="form-label" for="card-num-input">Card Number</label>
+                            <input type="text" class="form-input" id="card-num-input" placeholder="4532 7182 9304 8812" maxlength="19" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="card-name-input">Cardholder Name</label>
+                            <input type="text" class="form-input" id="card-name-input" placeholder="Jane Doe" required>
+                        </div>
+                        <div style="display: flex; gap: 20px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label" for="card-expiry-input">Expiry Date</label>
+                                <input type="text" class="form-input" id="card-expiry-input" placeholder="MM/YY" maxlength="5" required>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label" for="card-cvv-input">CVV</label>
+                                <input type="password" class="form-input" id="card-cvv-input" placeholder="***" maxlength="3" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Net Banking panel -->
+                    <div class="payment-details-panel d-none" id="payment-panel-netbanking">
+                        <p class="form-label" style="margin-bottom: 12px;">Choose your bank:</p>
+                        <div class="bank-list">
+                            <div class="bank-option selected" data-bank="dbs">
+                                <i class="fa-solid fa-university"></i> DBS Bank
+                            </div>
+                            <div class="bank-option" data-bank="uob">
+                                <i class="fa-solid fa-university"></i> UOB Bank
+                            </div>
+                            <div class="bank-option" data-bank="ocbc">
+                                <i class="fa-solid fa-university"></i> OCBC Bank
+                            </div>
+                            <div class="bank-option" data-bank="citi">
+                                <i class="fa-solid fa-university"></i> Citibank
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COD panel -->
+                    <div class="payment-details-panel d-none" id="payment-panel-cod">
+                        <div class="cod-panel">
+                            <p class="cod-title"><i class="fa-solid fa-check-circle"></i> Cash on Delivery Selected</p>
+                            <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.4;">Please keep the exact amount ready upon delivery. There is a processing fee of $0.00 for COD orders.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checkout Summary / Digital Card Simulator -->
+                <div class="checkout-form-col" style="flex: 0.9; display: flex; flex-direction: column; justify-content: space-between;">
+                    
+                    <!-- Credit Card Live Preview -->
+                    <div class="card-preview-container" id="credit-card-preview-wrapper">
+                        <div class="digital-card" id="interactive-card">
+                            <!-- Card Front -->
+                            <div class="card-face card-front">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="card-chip"></div>
+                                    <div class="card-logo">VISA</div>
+                                </div>
+                                <div class="card-number-label" id="card-preview-number">•••• •••• •••• ••••</div>
+                                <div class="card-row">
+                                    <div class="card-holder-col">
+                                        <span class="card-label">Card Holder</span>
+                                        <span class="card-value" id="card-preview-name">Jane Doe</span>
+                                    </div>
+                                    <div class="card-expiry-col">
+                                        <span class="card-label">Expires</span>
+                                        <span class="card-value" id="card-preview-expiry">MM/YY</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Card Back -->
+                            <div class="card-face card-back">
+                                <div class="card-magnetic-strip"></div>
+                                <span class="card-label" style="margin-left: 24px; margin-top: 10px; display: block;">Authorized Signature</span>
+                                <div class="card-signature-bar">
+                                    <span class="card-cvv-value" id="card-preview-cvv">CVV</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Order summary -->
+                    <div class="card-panel" style="padding: 20px; background: rgba(0,0,0,0.15); border-radius: 16px;">
+                        <h4 style="font-weight: 700; margin-bottom: 12px; font-size: 15px; text-transform: uppercase; color: var(--accent);">Order Summary</h4>
+                        <div class="cart-summary-row" style="font-size: 14px;">
+                            <span>Subtotal:</span>
+                            <span id="checkout-subtotal">$0.00</span>
+                        </div>
+                        <div class="cart-summary-row" style="font-size: 14px;">
+                            <span>Shipping:</span>
+                            <span style="color: var(--success); font-weight: bold;">FREE</span>
+                        </div>
+                        <div class="cart-total-row" style="font-size: 18px; margin-bottom: 15px; padding-top: 8px;">
+                            <span>Final Due:</span>
+                            <span id="checkout-total" style="color: var(--primary);">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-full" id="place-order-submit-btn" style="height: 50px; font-size: 16px;">
+                        Complete Transaction <i class="fa-solid fa-lock"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: API Settings -->
+    <button class="settings-trigger" id="api-settings-trigger"><i class="fa-solid fa-cog"></i></button>
+    
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="close-btn" id="close-settings-modal"><i class="fa-solid fa-times"></i></button>
+            <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;"><i class="fa-solid fa-cogs"></i> Microservices Gateway Config</h3>
+            
+            <div class="form-group">
+                <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Execution Mode</span>
+                    <span id="status-mode-badge" class="badge badge-success">Simulated / Mock Mode</span>
+                </label>
+                <div style="display: flex; gap: 10px; margin-top: 8px;">
+                    <button class="btn btn-secondary btn-full active" id="btn-mode-mock" style="border-radius: 8px;">Simulated (Offline)</button>
+                    <button class="btn btn-secondary btn-full" id="btn-mode-live" style="border-radius: 8px;">Live API endpoints</button>
+                </div>
+            </div>
+
+            <div id="live-endpoints-container" class="d-none">
+                <h4 style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; margin-top: 15px;">FastAPI Endpoints</h4>
+                <div class="form-group">
+                    <label class="form-label" for="api-order-url">Order Service URL</label>
+                    <input type="text" class="form-input" id="api-order-url" value="http://localhost:8000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="api-cart-url">Cart Service URL</label>
+                    <input type="text" class="form-input" id="api-cart-url" value="http://localhost:8001">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="api-inventory-url">Inventory Service URL</label>
+                    <input type="text" class="form-input" id="api-inventory-url" value="http://localhost:8002">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="api-payment-url">Payment Service URL</label>
+                    <input type="text" class="form-input" id="api-payment-url" value="http://localhost:8003">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="api-product-url">Product Service URL</label>
+                    <input type="text" class="form-input" id="api-product-url" value="http://localhost:8004">
+                </div>
+            </div>
+
+            <button class="btn btn-full" id="save-settings-btn" style="margin-top: 15px;">Save configurations</button>
+        </div>
+    </div>
+
+    <!-- Modal: Add/Edit Product -->
+    <div class="modal-overlay" id="product-form-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="close-btn" id="close-product-form-modal"><i class="fa-solid fa-times"></i></button>
+            <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;" id="product-form-title">Add New Product</h3>
+            
+            <form id="product-upsert-form" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                <input type="hidden" id="form-prod-id">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label" for="form-prod-name">Product Name</label>
+                    <input type="text" class="form-input" id="form-prod-name" placeholder="e.g. Vintage Dress" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="form-prod-category">Category</label>
+                    <select class="form-input" id="form-prod-category" required>
+                        <option value="Fashion">Dress & Fashion</option>
+                        <option value="Electronics">Smart Appliances & Electronics</option>
+                        <option value="Furniture">Furnitures</option>
+                        <option value="Grocery">Groceries</option>
+                        <option value="Cosmetics">Skin Care & Cosmetics</option>
+                        <option value="Utensils">Kitchen Utensils</option>
+                        <option value="Footwear">Footwear</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="form-prod-price">Price ($)</label>
+                    <input type="number" step="0.01" class="form-input" id="form-prod-price" placeholder="99.99" required>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label" for="form-prod-desc">Description</label>
+                    <textarea class="form-input" id="form-prod-desc" rows="3" placeholder="Write description..."></textarea>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label" for="form-prod-img">Image Link URL</label>
+                    <input type="text" class="form-input" id="form-prod-img" placeholder="https://..." value="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80">
+                </div>
+                <button type="submit" class="btn btn-full" style="grid-column: span 2; margin-top: 10px;" id="product-form-submit-btn">Save Product via API</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert / Toast Popup notification -->
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px;" id="toast-wrapper">
+        <!-- Toast elements dynamically added here -->
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
