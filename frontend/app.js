@@ -187,13 +187,13 @@ const state = {
     },
     apiMode: "live", // 'mock' or 'live'
     endpoints: {
-        order: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/order",
-        cart: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/cart",
-        inventory: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/inventory",
-        payment: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/payment",
-        product: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/product",
-        analytics: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/analytics",
-        auth: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/auth"
+        order: "https://uuz930mrx2.execute-api.ap-southeast-1.amazonaws.com/",
+        cart: "https://55akltsjy7.execute-api.ap-southeast-1.amazonaws.com/",
+        inventory: "https://g9c3k1vwe7.execute-api.ap-southeast-1.amazonaws.com/",
+        payment: "https://f9ltky86oc.execute-api.ap-southeast-1.amazonaws.com/",
+        product: "https://izalnbyq9f.execute-api.ap-southeast-1.amazonaws.com/",
+        analytics: "https://q6z1hbo2n9.execute-api.ap-southeast-1.amazonaws.com/",
+        auth: "https://jser2eszii.execute-api.ap-southeast-1.amazonaws.com/"
     },
     selectedCategory: "all",
     selectedProductDetail: null,
