@@ -81,12 +81,23 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/python@master
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Dependencies
+        run: |
+          for dir in microservices/*/; do
+            if [ -f "$dir/requirements.txt" ]; then
+              pip install -r "$dir/requirements.txt"
+            fi
+          done
+      - name: Install Snyk
+        run: npm install -g snyk
+      - name: Run Snyk Scan
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --all-projects --severity-threshold=high
+        run: snyk test --all-projects --severity-threshold=high
         continue-on-error: true # Prevents pipeline from crashing if Snyk token is missing
 
   sonar_scan:
