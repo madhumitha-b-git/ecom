@@ -187,13 +187,13 @@ const state = {
     },
     apiMode: "live", // 'mock' or 'live'
     endpoints: {
-        order: "http://localhost:8000/v1",
-        cart: "http://localhost:8001/v1",
-        inventory: "http://localhost:8002/v1",
-        payment: "http://localhost:8003/v1",
-        product: "http://localhost:8004/v1",
-        analytics: "http://localhost:8005/v1",
-        auth: "http://localhost:8006/v1"
+        order: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/order",
+        cart: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/cart",
+        inventory: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/inventory",
+        payment: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/payment",
+        product: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/product",
+        analytics: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/analytics",
+        auth: "https://vfuwutfw87.execute-api.ap-southeast-1.amazonaws.com/v1/auth"
     },
     selectedCategory: "all",
     selectedProductDetail: null,

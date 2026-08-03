@@ -1,6 +1,6 @@
 # 1. Auth Service Lambda
 resource "aws_lambda_function" "auth_service" {
-  function_name = "ecom-auth-service"
+  function_name = "auth-service_ecom"
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "main.handler"
   runtime       = "python3.12"
@@ -19,7 +19,7 @@ resource "aws_lambda_function" "auth_service" {
 
 # 2. Analytics Service Lambda
 resource "aws_lambda_function" "analytics_service" {
-  function_name = "ecom-analytics-service"
+  function_name = "analytics-service_ecom"
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "main.handler"
   runtime       = "python3.12"
@@ -37,7 +37,7 @@ resource "aws_lambda_function" "analytics_service" {
 
 # 3. Order Service Lambda
 resource "aws_lambda_function" "order_service" {
-  function_name = "ecom-order-service"
+  function_name = "order-service_ecom"
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "main.handler"
   runtime       = "python3.12"
@@ -55,7 +55,7 @@ resource "aws_lambda_function" "order_service" {
 
 # 4. Inventory Service Lambda
 resource "aws_lambda_function" "inventory_service" {
-  function_name = "ecom-inventory-service"
+  function_name = "inventory-service_ecom"
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "main.handler"
   runtime       = "python3.12"
@@ -70,7 +70,7 @@ resource "aws_lambda_function" "inventory_service" {
 
 # 5. Payment Service Lambda
 resource "aws_lambda_function" "payment_service" {
-  function_name = "ecom-payment-service"
+  function_name = "payment-service_ecom"
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "main.handler"
   runtime       = "python3.12"
@@ -85,7 +85,7 @@ resource "aws_lambda_function" "payment_service" {
 
 # 6. Cart Service Lambda
 resource "aws_lambda_function" "cart_service" {
-  function_name = "ecom-cart-service"
+  function_name = "cart-service_ecom"
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "main.handler"
   runtime       = "python3.12"
@@ -100,7 +100,7 @@ resource "aws_lambda_function" "cart_service" {
 
 # 7. Product Service Lambda
 resource "aws_lambda_function" "product_service" {
-  function_name = "ecom-product-service"
+  function_name = "product-service_ecom"
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "main.handler"
   runtime       = "python3.12"
