@@ -327,6 +327,14 @@ header {
     box-shadow: none;
 }
 
+#btn-mode-mock.active, #btn-mode-live.active {
+    background: var(--accent) !important;
+    color: #1a1a1a !important;
+    border-color: var(--accent) !important;
+    font-weight: bold;
+    box-shadow: var(--glow-yellow);
+}
+
 /* Product Grid & Cards */
 .products-grid {
     display: grid;
@@ -1566,4 +1574,48 @@ body.light-theme ::-webkit-scrollbar-thumb:hover {
 body.light-theme .card-preview-container .digital-card {
     border: 1px solid var(--glass-border);
 }
+
+
+/* Live Order Pipeline Visualizer Styles */
+.pipeline-step.active .pipeline-dot {
+    background: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #000 !important;
+    box-shadow: var(--glow-yellow);
+}
+
+.pipeline-step.active h4 {
+    color: var(--text-primary) !important;
+}
+
+.pipeline-step.active p {
+    color: var(--text-secondary) !important;
+}
+
+.pipeline-step.success .pipeline-dot {
+    background: var(--success) !important;
+    border-color: var(--success) !important;
+    color: #fff !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+.pipeline-step.success h4 {
+    color: var(--success) !important;
+}
+
+.pipeline-step.success p {
+    color: var(--text-secondary) !important;
+}
+
+.pipeline-step.failed .pipeline-dot {
+    background: var(--danger) !important;
+    border-color: var(--danger) !important;
+    color: #fff !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.pipeline-step.failed h4 {
+    color: var(--danger) !important;
+}
+
 

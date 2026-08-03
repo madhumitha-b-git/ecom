@@ -1,0 +1,10 @@
+{
+    "event_type": "cart_action",
+    "timestamp": 1785067701.3900917,
+    "data": {
+        "action": "add",
+        "user_id": "lak@gmail.com",
+        "product_id": "prod-toys-002",
+        "quantity": 1
+    }
+}

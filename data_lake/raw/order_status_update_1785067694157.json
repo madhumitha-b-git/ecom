@@ -1,0 +1,12 @@
+{
+    "event_type": "order_status_update",
+    "timestamp": 1785067694.1570547,
+    "data": {
+        "order_id": "0450ccca-b7b9-41f5-8565-dbe94129588d",
+        "status": "PENDING",
+        "product_id": "prod-fit-001",
+        "user_id": "lak@gmail.com",
+        "amount": 199.99,
+        "quantity": 1
+    }
+}

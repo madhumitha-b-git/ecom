@@ -1,0 +1,12 @@
+{
+    "event_type": "order_status_update",
+    "timestamp": 1785067689.1924143,
+    "data": {
+        "order_id": "d9857d11-af7c-4666-9a85-a1dd9d2e0507",
+        "status": "PENDING",
+        "product_id": "prod-toys-002",
+        "user_id": "lak@gmail.com",
+        "amount": 49.99,
+        "quantity": 1
+    }
+}

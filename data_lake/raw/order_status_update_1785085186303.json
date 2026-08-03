@@ -1,0 +1,12 @@
+{
+    "event_type": "order_status_update",
+    "timestamp": 1785085186.303717,
+    "data": {
+        "order_id": "7fc32a10-0060-4cbe-8b84-2889a78d5984",
+        "status": "PENDING",
+        "product_id": "prod-elec-001",
+        "user_id": "pep@gmail.com",
+        "amount": 249.99,
+        "quantity": 1
+    }
+}

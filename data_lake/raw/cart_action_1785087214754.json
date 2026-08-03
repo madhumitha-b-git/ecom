@@ -1,0 +1,10 @@
+{
+    "event_type": "cart_action",
+    "timestamp": 1785087214.7544415,
+    "data": {
+        "action": "add",
+        "user_id": "pep@gmail.com",
+        "product_id": "prod-furn-001",
+        "quantity": 3
+    }
+}

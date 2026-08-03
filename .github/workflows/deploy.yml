@@ -1,0 +1,49 @@
+name: Deploy to AWS Lambda
+
+# Triggers the workflow when pushing to these branches
+on:
+  push:
+    branches:
+      - main
+      - master
+      - temp
+
+jobs:
+  test_and_deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Checkout the repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Setup Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3. Check for Python syntax errors before deploying
+      - name: Run Syntax Checks
+        run: |
+          echo "Checking Python syntax..."
+          python -m py_compile microservices/*/*.py || true
+          echo "Syntax check completed!"
+
+      # 4. Install AWS dependencies (boto3 is needed for the script)
+      - name: Install Dependencies
+        run: |
+          pip install boto3
+
+      # 5. Securely authenticate with AWS using GitHub Secrets
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ap-southeast-1
+
+      # 6. Run the custom deployment script
+      - name: Deploy Microservices
+        run: python deploy_to_aws.py

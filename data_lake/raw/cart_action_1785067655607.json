@@ -1,0 +1,10 @@
+{
+    "event_type": "cart_action",
+    "timestamp": 1785067655.6075137,
+    "data": {
+        "action": "add",
+        "user_id": "lak@gmail.com",
+        "product_id": "prod-groc-001",
+        "quantity": 1
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "event_type": "cart_action",
+    "timestamp": 1785067676.858354,
+    "data": {
+        "action": "add",
+        "user_id": "lak@gmail.com",
+        "product_id": "prod-shoes-001",
+        "quantity": 1
+    }
+}

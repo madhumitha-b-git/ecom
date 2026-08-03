@@ -1,0 +1,12 @@
+{
+    "event_type": "order_status_update",
+    "timestamp": 1785067989.2593896,
+    "data": {
+        "order_id": "48f39093-d04b-4e48-a3d1-68067f374e76",
+        "status": "DELIVERED",
+        "product_id": "prod-shoes-001",
+        "user_id": "lak@gmail.com",
+        "amount": 1200.0,
+        "quantity": 10
+    }
+}

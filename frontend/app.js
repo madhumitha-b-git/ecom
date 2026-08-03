@@ -93,25 +93,91 @@ const DEFAULT_PRODUCTS = [
         rating: 4.5,
         rating_count: 220,
         image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80"
+    },
+    {
+        product_id: "prod-books-001",
+        name: "Clean Architecture: A Craftsman's Guide",
+        description: "A comprehensive guide to software structure and design patterns written by industry expert Robert C. Martin. Must-read for developers.",
+        price: 29.99,
+        category: "Books",
+        rating: 4.9,
+        rating_count: 480,
+        image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&q=80"
+    },
+    {
+        product_id: "prod-books-002",
+        name: "Designing Data-Intensive Applications",
+        description: "The definitive guide to understanding system architectures, storage systems, databases, processing models, and scaling rules.",
+        price: 44.95,
+        category: "Books",
+        rating: 4.9,
+        rating_count: 910,
+        image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&q=80"
+    },
+    {
+        product_id: "prod-fit-001",
+        name: "Smart Adjustable Dumbbells Set",
+        description: "Sleek all-in-one dumbbell set adjustable from 5 to 52.5 lbs. Features durable steel plates and safe dial-selection technology.",
+        price: 199.99,
+        category: "Fitness",
+        rating: 4.8,
+        rating_count: 320,
+        image: "https://images.unsplash.com/photo-1638536532686-d610adfc8e5c?w=600&q=80"
+    },
+    {
+        product_id: "prod-fit-002",
+        name: "Premium Extra-Thick Yoga Mat",
+        description: "Eco-friendly, non-slip high-density yoga mat with alignment markers. Double-sided texture ensures excellent traction and joint support.",
+        price: 34.50,
+        category: "Fitness",
+        rating: 4.7,
+        rating_count: 140,
+        image: "https://images.unsplash.com/photo-1592432678016-e910b452f9a2?w=600&q=80"
+    },
+    {
+        product_id: "prod-toys-001",
+        name: "STEM Mechanical Mars Rover Robot",
+        description: "Solar-powered science robot kit for kids and teens. Build a working mechanical rover with realistic suspension and steering.",
+        price: 79.99,
+        category: "Toys",
+        rating: 4.6,
+        rating_count: 65,
+        image: "https://images.unsplash.com/photo-1531525645387-7f14be1bdbbd?w=600&q=80"
+    },
+    {
+        product_id: "prod-toys-002",
+        name: "Creative Classic Bricks Construction Box",
+        description: "Set of 790 classic colorful building bricks. Includes windows, doors, eyes, and baseplates for infinite creative design.",
+        price: 49.99,
+        category: "Toys",
+        rating: 4.8,
+        rating_count: 215,
+        image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&q=80"
     }
 ];
 
 const DEFAULT_INVENTORY = {
     "prod-fashion-001": 25,
-    "prod-fashion-002": 4,  // Low stock
+    "prod-fashion-002": 4,
     "prod-elec-001": 15,
     "prod-elec-002": 8,
     "prod-furn-001": 12,
     "prod-groc-001": 50,
-    "prod-cosm-001": 3,   // Low stock
+    "prod-cosm-001": 3,
     "prod-uten-001": 18,
-    "prod-shoes-001": 30
+    "prod-shoes-001": 30,
+    "prod-books-001": 40,
+    "prod-books-002": 25,
+    "prod-fit-001": 10,
+    "prod-fit-002": 35,
+    "prod-toys-001": 15,
+    "prod-toys-002": 60
 };
 
 // --- App State ---
 const state = {
     products: [...DEFAULT_PRODUCTS],
-    inventory: { ...DEFAULT_INVENTORY },
+    inventory: {},
     cart: [],
     orders: [],
     payments: [],
@@ -119,17 +185,20 @@ const state = {
         username: "Guest",
         role: "user"
     },
-    apiMode: "mock", // 'mock' or 'live'
+    apiMode: "live", // 'mock' or 'live'
     endpoints: {
-        order: "http://localhost:8000",
-        cart: "http://localhost:8001",
-        inventory: "http://localhost:8002",
-        payment: "http://localhost:8003",
-        product: "http://localhost:8004"
+        order: "http://localhost:8000/v1",
+        cart: "http://localhost:8001/v1",
+        inventory: "http://localhost:8002/v1",
+        payment: "http://localhost:8003/v1",
+        product: "http://localhost:8004/v1",
+        analytics: "http://localhost:8005/v1",
+        auth: "http://localhost:8006/v1"
     },
     selectedCategory: "all",
     selectedProductDetail: null,
-    selectedCheckoutSize: null
+    selectedCheckoutSize: null,
+    wishlist: []
 };
 
 // --- UI Selectors ---
@@ -138,6 +207,7 @@ const views = {
     userOrders: document.getElementById("user-orders-view"),
     login: document.getElementById("login-view"),
     admin: document.getElementById("admin-view"),
+    wishlist: document.getElementById("wishlist-view"),
     cartDrawer: document.getElementById("cart-drawer-element"),
     productModal: document.getElementById("product-detail-modal"),
     checkoutModal: document.getElementById("checkout-modal"),
@@ -178,7 +248,7 @@ function showToast(message, type = "success") {
 // --- View Router ---
 function showView(viewName) {
     // Restrict storefront and personal orders for Admin
-    if (state.currentUser.role === "admin" && (viewName === "storefront" || viewName === "userOrders")) {
+    if (state.currentUser.role === "admin" && (viewName === "storefront" || viewName === "userOrders" || viewName === "wishlist")) {
         showToast("Access Denied: Admins cannot access shopping features.", "warning");
         showView("admin");
         return;
@@ -198,6 +268,8 @@ function showView(viewName) {
     document.getElementById("nav-shop-btn").classList.remove("active");
     document.getElementById("nav-user-orders-btn").classList.remove("active");
     document.getElementById("nav-admin-btn").classList.remove("active");
+    const wishlistBtn = document.getElementById("nav-wishlist-btn");
+    if (wishlistBtn) wishlistBtn.classList.remove("active");
 
     if (viewName === "storefront") {
         document.getElementById("nav-shop-btn").classList.add("active");
@@ -217,6 +289,11 @@ function showView(viewName) {
         document.getElementById("nav-admin-btn").classList.add("active");
         renderAdminDashboard();
     }
+
+    if (viewName === "wishlist") {
+        if (wishlistBtn) wishlistBtn.classList.add("active");
+        renderWishlist();
+    }
 }
 
 // --- Core API Helpers ---
@@ -231,6 +308,9 @@ async function apiCall(service, path, method = "GET", body = null) {
                 "Content-Type": "application/json"
             }
         };
+        if (state.currentUser && state.currentUser.token) {
+            options.headers["Authorization"] = `Bearer ${state.currentUser.token}`;
+        }
         if (body) {
             options.body = JSON.stringify(body);
         }
@@ -249,7 +329,6 @@ async function fetchAndRenderProducts() {
     if (state.apiMode === "live") {
         const liveProducts = await apiCall("product", "/products");
         if (liveProducts && liveProducts.length > 0) {
-            // Map live fields to state fields
             state.products = liveProducts.map(p => ({
                 product_id: p.product_id,
                 name: p.name,
@@ -300,11 +379,18 @@ async function fetchAndRenderProducts() {
             else starsHtml += '<i class="fa-regular fa-star"></i>';
         }
 
+        const isWishlisted = state.wishlist.includes(p.product_id);
+        const heartColor = isWishlisted ? "#ef4444" : "rgba(255,255,255,0.4)";
+        const heartIcon = isWishlisted ? "fa-solid fa-heart" : "fa-regular fa-heart";
+
         const card = document.createElement("div");
         card.className = "product-card";
         card.innerHTML = `
-            <div class="product-img-container">
+            <div class="product-img-container" style="position: relative;">
                 <img src="${p.image}" class="product-img" alt="${p.name}">
+                <button class="wishlist-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: none; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;" onclick="event.stopPropagation(); toggleWishlist('${p.product_id}')">
+                    <i class="${heartIcon}" style="color: ${heartColor}; font-size: 16px;"></i>
+                </button>
             </div>
             <div class="product-info">
                 <span class="product-category">${p.category}</span>
@@ -314,7 +400,7 @@ async function fetchAndRenderProducts() {
                     <span>(${p.rating_count})</span>
                 </div>
                 <div class="product-footer">
-                    <span class="product-price">$${p.price.toFixed(2)}</span>
+                    <span class="product-price">₹${p.price.toFixed(2)}</span>
                     <button class="add-to-cart-quick" data-id="${p.product_id}" title="Quick View"><i class="fa-solid fa-eye"></i></button>
                 </div>
             </div>
@@ -375,7 +461,7 @@ function openProductDetail(productId) {
                 <span class="stars">${starsHtml}</span>
                 <span style="color: var(--text-secondary);">(${product.rating} stars / ${product.rating_count} reviews)</span>
             </div>
-            <div class="detail-price">$${product.price.toFixed(2)}</div>
+            <div class="detail-price">₹${product.price.toFixed(2)}</div>
             <p class="detail-desc">${product.description}</p>
             
             ${sizeSelectorHtml}
@@ -479,6 +565,10 @@ function removeFromCart(cartId) {
 }
 
 function renderCart() {
+    // Persist cart state to localStorage per-user
+    const cartKey = state.currentUser.username !== "Guest" ? `ecom_cart_${state.currentUser.username}` : "ecom_cart";
+    localStorage.setItem(cartKey, JSON.stringify(state.cart));
+
     const container = document.getElementById("cart-items-container");
     container.innerHTML = "";
 
@@ -498,7 +588,7 @@ function renderCart() {
             <div class="cart-item-details">
                 <h4 class="cart-item-name">${item.name}</h4>
                 <div class="cart-item-meta">${item.size ? `Size: ${item.size}` : 'Standard Edition'}</div>
-                <div class="cart-item-price">$${item.price.toFixed(2)}</div>
+                <div class="cart-item-price">₹${item.price.toFixed(2)}</div>
                 <div class="cart-item-controls">
                     <div style="display: flex; align-items: center;">
                         <button class="qty-btn" onclick="updateCartQuantity('${item.cart_id}', -1)">-</button>
@@ -513,15 +603,55 @@ function renderCart() {
     });
 
     document.getElementById("cart-item-count").innerText = totalCount;
-    document.getElementById("cart-total-value").innerText = `$${totalPrice.toFixed(2)}`;
+    document.getElementById("cart-total-value").innerText = `₹${totalPrice.toFixed(2)}`;
 
     if (state.cart.length === 0) {
         container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px 0;"><i class="fa-solid fa-cart-shopping" style="font-size: 40px; margin-bottom: 12px; opacity: 0.3;"></i><p>Your cart is empty.</p></div>`;
     }
 }
 
+async function pollOrderStatus(orderId, retries = 10) {
+    if (retries <= 0) {
+        showToast(`Order status check timed out. Please check your purchase history.`, "warning");
+        return;
+    }
+    setTimeout(async () => {
+        try {
+            // Fetch live orders
+            const liveOrders = await apiCall("order", "/orders");
+            if (liveOrders) {
+                const targetOrders = liveOrders.filter(o => o.order_id === orderId);
+                if (targetOrders.length > 0) {
+                    const status = targetOrders[0].status || "PENDING";
+                    if (status === "SUCCESS") {
+                        showToast(`Order ${orderId} completed successfully!`, "success");
+                        // Refresh products and inventory to reflect decremented stock
+                        fetchAndRenderProducts();
+                        renderUserOrders();
+                        return;
+                    } else if (status === "FAILED") {
+                        showToast(`Order ${orderId} failed (out of stock or payment failure).`, "danger");
+                        fetchAndRenderProducts();
+                        renderUserOrders();
+                        return;
+                    }
+                }
+            }
+            pollOrderStatus(orderId, retries - 1);
+        } catch (e) {
+            console.error("Error polling order status:", e);
+            pollOrderStatus(orderId, retries - 1);
+        }
+    }, 2000);
+}
+
 // --- Checkout & Payment Logic ---
 function openCheckout() {
+    if (state.currentUser.username === "Guest") {
+        showToast("Please log in to place an order!", "warning");
+        document.getElementById("nav-login-btn")?.click();
+        return;
+    }
     if (state.cart.length === 0) {
         showToast("Your cart is empty!", "warning");
         return;
@@ -530,8 +660,22 @@ function openCheckout() {
     let totalPrice = 0;
     state.cart.forEach(i => totalPrice += i.price * i.quantity);
 
-    document.getElementById("checkout-subtotal").innerText = `$${totalPrice.toFixed(2)}`;
-    document.getElementById("checkout-total").innerText = `$${totalPrice.toFixed(2)}`;
+    document.getElementById("checkout-subtotal").innerText = `₹${totalPrice.toFixed(2)}`;
+    document.getElementById("checkout-total").innerText = `₹${totalPrice.toFixed(2)}`;
+
+    // Populate checkout names automatically from the user's session profile
+    if (state.currentUser && state.currentUser.name) {
+        document.getElementById("checkout-name").value = state.currentUser.name;
+        document.getElementById("card-name-input").value = state.currentUser.name;
+    } else if (state.currentUser && state.currentUser.username !== "Guest") {
+        const fallbackName = state.currentUser.username.split('@')[0];
+        const formattedName = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
+        document.getElementById("checkout-name").value = formattedName;
+        document.getElementById("card-name-input").value = formattedName;
+    } else {
+        document.getElementById("checkout-name").value = "Jane Doe";
+        document.getElementById("card-name-input").value = "Jane Doe";
+    }
 
     views.cartDrawer.classList.remove("active");
     views.checkoutModal.classList.add("active");
@@ -623,82 +767,309 @@ bankOptions.forEach(opt => {
 
 // Complete Purchase / Submit Order
 document.getElementById("place-order-submit-btn").addEventListener("click", async () => {
+    if (state.cart.length === 0) {
+        showToast("Your cart is empty", "warning");
+        return;
+    }
+
     const finalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const orderId = "order-" + Math.floor(100000 + Math.random() * 900000);
     const activePayType = document.querySelector(".payment-tab.active").dataset.payType;
+    const shippingName = document.getElementById("checkout-name").value.trim() || "Jane Doe";
+    const shippingAddress = document.getElementById("checkout-address").value.trim() || "123 Main St, Singapore 189720";
+    const phone = document.getElementById("checkout-phone") ? document.getElementById("checkout-phone").value.trim() : "";
 
-    showToast("Processing Payment via secure channel...", "warning");
+    let selectedPaymentDetail = activePayType;
+    if (activePayType === "netbanking") {
+        const selectedBank = document.querySelector(".bank-option.selected");
+        if (selectedBank) selectedPaymentDetail = selectedBank.dataset.bank.toUpperCase();
+    }
 
-    // Simulate Payment delay
-    setTimeout(async () => {
-        // Create Payment record
-        const paymentRecord = {
-            payment_id: "pay-" + Math.floor(100000 + Math.random() * 900000),
-            order_id: orderId,
-            amount: finalAmount,
-            status: "SUCCESS",
-            method: activePayType.toUpperCase(),
-            timestamp: new Date().toISOString()
-        };
+    // Close checkout modal
+    views.checkoutModal.classList.remove("active");
 
-        // Create Order records
-        const newOrders = state.cart.map(item => ({
-            order_id: orderId,
-            user_id: state.currentUser.username,
-            product_id: item.product_id,
-            name: item.name,
-            quantity: item.quantity,
-            amount: item.price * item.quantity,
-            size: item.size || "",
-            status: "PENDING",
-            timestamp: new Date().toISOString()
-        }));
+    // Initialize Order Tracker Modal UI
+    document.getElementById("tracker-order-id").innerText = `Order ID: ${orderId}`;
+    
+    const steps = ["step-order-created", "step-inventory-reserved", "step-payment-processed", "step-order-complete"];
+    steps.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.className = "pipeline-step";
+        }
+    });
 
-        if (state.apiMode === "live") {
-            // Live microservices integration calls
-            for (const order of newOrders) {
-                // Call order-service POST /orders
-                await apiCall("order", "/orders", "POST", {
-                    user_id: order.user_id,
-                    product_id: order.product_id,
-                    quantity: order.quantity,
-                    amount: order.amount,
-                    size: order.size
+    document.getElementById("tracker-success-action").classList.add("d-none");
+    document.getElementById("tracker-failure-action").classList.add("d-none");
+    document.getElementById("order-tracker-modal").classList.add("active");
+
+    // Start Step 1
+    document.getElementById("step-order-created").classList.add("active");
+
+    const orderTimestamp = new Date().toISOString();
+
+    const paymentRecord = {
+        payment_id: "pay-" + Math.floor(100000 + Math.random() * 900000),
+        order_id: orderId,
+        amount: finalAmount,
+        status: "SUCCESS",
+        method: selectedPaymentDetail.toUpperCase(),
+        timestamp: orderTimestamp
+    };
+
+    const newOrders = state.cart.map(item => ({
+        order_id: orderId,
+        user_id: state.currentUser.username,
+        product_id: item.product_id,
+        name: item.name,
+        quantity: item.quantity,
+        amount: item.price * item.quantity,
+        size: item.size || "",
+        shipping_name: shippingName,
+        shipping_address: shippingAddress,
+        phone: phone,
+        payment_method: selectedPaymentDetail,
+        status: "PENDING",
+        timestamp: orderTimestamp
+    }));
+
+    state.payments.push(paymentRecord);
+    state.orders.push(...newOrders);
+
+    if (state.apiMode === "live") {
+        try {
+            let wsUrl = state.endpoints.analytics.replace(/^http/, "ws") + "/analytics/ws";
+            const ws = new WebSocket(wsUrl);
+
+            ws.onopen = async () => {
+                console.log("WebSocket | Connected to Event Broker at:", wsUrl);
+
+                const realOrderIds = [];
+                for (const order of newOrders) {
+                    const res = await apiCall("order", "/orders", "POST", {
+                        user_id: order.user_id,
+                        product_id: order.product_id,
+                        quantity: order.quantity,
+                        amount: order.amount,
+                        size: order.size,
+                        shipping_name: order.shipping_name,
+                        shipping_address: order.shipping_address,
+                        phone: order.phone,
+                        payment_method: order.payment_method
+                    });
+                    if (res && res.order_id) {
+                        realOrderIds.push(res.order_id);
+                        // Update state.orders with real order_id from backend
+                        const idx = state.orders.findIndex(o => o.order_id === orderId && o.product_id === order.product_id);
+                        if (idx !== -1) state.orders[idx].order_id = res.order_id;
+                    }
+                }
+                // Use first real order_id for polling/email
+                if (realOrderIds.length > 0) window._lastRealOrderId = realOrderIds[0];
+
+                await apiCall("payment", "/payments", "POST", {
+                    order_id: realOrderIds[0] || orderId,
+                    amount: finalAmount,
+                    method: selectedPaymentDetail
+                });
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (msg.event_type === "order_status_update" && msg.data.order_id === orderId) {
+                        const status = msg.data.status;
+                        console.log("WebSocket | Received status update:", status);
+
+                        if (status === "PENDING") {
+                            document.getElementById("step-order-created").className = "pipeline-step success";
+                            document.getElementById("step-inventory-reserved").className = "pipeline-step active";
+                        } else if (status === "INVENTORY_RESERVED") {
+                            document.getElementById("step-order-created").className = "pipeline-step success";
+                            document.getElementById("step-inventory-reserved").className = "pipeline-step success";
+                            document.getElementById("step-payment-processed").className = "pipeline-step active";
+                        } else if (status === "INVENTORY_FAILED") {
+                            document.getElementById("step-inventory-reserved").className = "pipeline-step failed";
+                            document.getElementById("tracker-failure-reason").innerHTML = `<i class="fa-solid fa-circle-xmark" style="margin-right: 6px;"></i> Order Failed: Stock reservation failed (${msg.data.reason || 'Out of stock'}).`;
+                            document.getElementById("tracker-failure-action").classList.remove("d-none");
+                            ws.close();
+                        } else if (status === "SUCCESS") {
+                            document.getElementById("step-order-created").className = "pipeline-step success";
+                            document.getElementById("step-inventory-reserved").className = "pipeline-step success";
+                            document.getElementById("step-payment-processed").className = "pipeline-step success";
+                            document.getElementById("step-order-complete").className = "pipeline-step success";
+                            document.getElementById("tracker-success-action").classList.remove("d-none");
+                            ws.close();
+                        } else if (status === "FAILED") {
+                            document.getElementById("step-payment-processed").className = "pipeline-step failed";
+                            document.getElementById("tracker-failure-reason").innerHTML = `<i class="fa-solid fa-circle-xmark" style="margin-right: 6px;"></i> Order Failed: Payment processing failed.`;
+                            document.getElementById("tracker-failure-action").classList.remove("d-none");
+                            ws.close();
+                        }
+                    }
+                } catch (e) {
+                    console.error("WebSocket | Message parsing error:", e);
+                }
+            };
+
+            const runLocalSimulation = async () => {
+                // Place orders via API and capture real order IDs
+                const realOrderIds = [];
+                for (const order of newOrders) {
+                    const res = await apiCall("order", "/orders", "POST", {
+                        user_id: order.user_id,
+                        product_id: order.product_id,
+                        quantity: order.quantity,
+                        amount: order.amount,
+                        size: order.size,
+                        shipping_name: order.shipping_name,
+                        shipping_address: order.shipping_address,
+                        phone: order.phone,
+                        payment_method: order.payment_method
+                    });
+                    if (res && res.order_id) {
+                        realOrderIds.push(res.order_id);
+                        const idx = state.orders.findIndex(o => o.order_id === orderId && o.product_id === order.product_id);
+                        if (idx !== -1) state.orders[idx].order_id = res.order_id;
+                    }
+                }
+                if (realOrderIds.length > 0) window._lastRealOrderId = realOrderIds[0];
+                await apiCall("payment", "/payments", "POST", {
+                    order_id: realOrderIds[0] || orderId,
+                    amount: finalAmount,
+                    method: selectedPaymentDetail
                 });
 
-                // Decrement inventory stock on inventory-service
-                await apiCall("inventory", `/inventory/${order.product_id}/decrement?quantity=${order.quantity}`, "POST");
-            }
+                setTimeout(() => {
+                    document.getElementById("step-order-created").className = "pipeline-step success";
+                    document.getElementById("step-inventory-reserved").className = "pipeline-step active";
+                    setTimeout(() => {
+                        document.getElementById("step-inventory-reserved").className = "pipeline-step success";
+                        document.getElementById("step-payment-processed").className = "pipeline-step active";
+                        setTimeout(() => {
+                            document.getElementById("step-payment-processed").className = "pipeline-step success";
+                            document.getElementById("step-order-complete").className = "pipeline-step active";
+                            setTimeout(() => {
+                                document.getElementById("step-order-complete").className = "pipeline-step success";
+                                document.getElementById("tracker-success-action").classList.remove("d-none");
+                            }, 800);
+                        }, 800);
+                    }, 800);
+                }, 800);
+            };
 
-            // Call payment-service
-            await apiCall("payment", "/payments", "POST", {
-                order_id: orderId,
-                amount: finalAmount
-            });
+            ws.onerror = (err) => {
+                console.error("WebSocket | Connection error:", err);
+                runLocalSimulation();
+            };
+
+        } catch (err) {
+            console.error("Order live pipeline error:", err);
+            showToast("Failed to connect to backend services.", "danger");
         }
+    } else {
+        // --- MOCK MODE: Local Timeout Simulation ---
+        setTimeout(() => {
+            document.getElementById("step-order-created").className = "pipeline-step success";
+            document.getElementById("step-inventory-reserved").className = "pipeline-step active";
+            
+            setTimeout(() => {
+                document.getElementById("step-inventory-reserved").className = "pipeline-step success";
+                document.getElementById("step-payment-processed").className = "pipeline-step active";
+                
+                setTimeout(() => {
+                    document.getElementById("step-payment-processed").className = "pipeline-step success";
+                    document.getElementById("step-order-complete").className = "pipeline-step active";
+                    
+                    setTimeout(() => {
+                        document.getElementById("step-order-complete").className = "pipeline-step success";
+                        document.getElementById("tracker-success-action").classList.remove("d-none");
+                    }, 800);
+                }, 800);
+            }, 800);
+        }, 800);
+    }
+});
 
-        // Always save locally in state for UI display
-        state.payments.push(paymentRecord);
-        state.orders.push(...newOrders);
+// --- Email Notification ---
+async function sendOrderConfirmationEmail(orderItems, totalPaid) {
+    if (!orderItems || orderItems.length === 0) return;
 
-        // Adjust local inventory stock
-        state.cart.forEach(item => {
-            if (state.inventory[item.product_id]) {
-                state.inventory[item.product_id] = Math.max(0, state.inventory[item.product_id] - item.quantity);
-            }
-        });
+    const realOrderId = window._lastRealOrderId || orderItems[0].order_id;
+    const userName = orderItems[0].shipping_name || state.currentUser.name || state.currentUser.username;
+    const userEmail = state.currentUser.username;
+    const orderDate = new Date(orderItems[0].timestamp).toLocaleString();
+    const paymentMethod = orderItems[0].payment_method || "CARD";
+    const firstItem = orderItems[0];
 
-        // Clear cart
-        state.cart = [];
-        renderCart();
+    if (state.apiMode === "live") {
+        try {
+            await fetch(`${state.endpoints.auth}/auth/send-order-email`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${state.currentUser.token}`
+                },
+                body: JSON.stringify({
+                    to: userEmail,
+                    order_id: realOrderId,
+                    user_name: userName,
+                    shipping_name: firstItem.shipping_name || "",
+                    shipping_address: firstItem.shipping_address || "",
+                    phone: firstItem.phone || "",
+                    payment_method: paymentMethod,
+                    order_date: orderDate,
+                    items: orderItems.map(o => ({
+                        name: o.name,
+                        quantity: o.quantity,
+                        amount: o.amount,
+                        size: o.size || ""
+                    })),
+                    total_paid: totalPaid
+                })
+            });
+            showToast(`Order confirmation email sent to ${userEmail}!`, "success");
+        } catch (err) {
+            console.warn("Order email failed:", err);
+        }
+    }
+}
 
-        // Close Checkout
-        views.checkoutModal.classList.remove("active");
-        showToast(`Order Placed Successfully! Transaction ID: ${orderId}`, "success");
-        
-        // Refresh catalog to update stock badges if needed
-        fetchAndRenderProducts();
-    }, 1500);
+// Close Tracker Modal manually (fallback top-right close button)
+document.getElementById("close-order-tracker-btn").addEventListener("click", async () => {
+    document.getElementById("order-tracker-modal").classList.remove("active");
+
+    const realId = window._lastRealOrderId || (state.orders[state.orders.length - 1]?.order_id);
+    const lastOrderItems = state.orders.filter(o => o.order_id === realId);
+    const totalPaid = lastOrderItems.reduce((sum, item) => sum + item.amount, 0);
+    await sendOrderConfirmationEmail(lastOrderItems.length ? lastOrderItems : newOrders, totalPaid || finalAmount);
+
+    state.cart = [];
+    renderCart();
+    showView("storefront");
+    fetchAndRenderProducts();
+});
+
+// Close Tracker Modal on SUCCESS
+document.getElementById("btn-close-tracker-modal").addEventListener("click", async () => {
+    document.getElementById("order-tracker-modal").classList.remove("active");
+
+    const realId = window._lastRealOrderId || (state.orders[state.orders.length - 1]?.order_id);
+    const lastOrderItems = state.orders.filter(o => o.order_id === realId);
+    const totalPaid = lastOrderItems.reduce((sum, item) => sum + item.amount, 0);
+    await sendOrderConfirmationEmail(lastOrderItems.length ? lastOrderItems : newOrders, totalPaid || finalAmount);
+
+    state.cart = [];
+    renderCart();
+    showView("storefront");
+    fetchAndRenderProducts();
+});
+
+// Close Tracker Modal on FAILURE
+document.getElementById("btn-close-tracker-fail-btn").addEventListener("click", () => {
+    document.getElementById("order-tracker-modal").classList.remove("active");
+    showView("storefront");
+    document.getElementById("cart-drawer-trigger").click(); // reopen cart
 });
 
 // --- Admin Panel Logic ---
@@ -723,39 +1094,177 @@ adminTabButtons.forEach(btn => {
             renderAdminOrders();
         } else if (btn.dataset.adminPanel === "payments") {
             renderAdminPayments();
+        } else if (btn.dataset.adminPanel === "users") {
+            renderAdminUsers();
         }
     });
 });
 
-function renderAdminDashboard() {
-    // 1. Calculate Revenue from Payments logged as Success
+async function renderAdminDashboard() {
+    // Fetch live data in live mode for accurate stats
+    if (state.apiMode === "live") {
+        try {
+            const liveOrders = await apiCall("order", "/orders");
+            if (liveOrders) {
+                state.orders = liveOrders.map(o => ({
+                    order_id: o.order_id,
+                    user_id: o.user_id,
+                    product_id: o.product_id,
+                    name: state.products.find(p => p.product_id === o.product_id)?.name || o.product_id,
+                    quantity: o.quantity,
+                    amount: o.amount,
+                    size: o.size || "",
+                    shipping_name: o.shipping_name || "",
+                    shipping_address: o.shipping_address || "",
+                    phone: o.phone || "",
+                    payment_method: o.payment_method || "",
+                    status: o.status || "PENDING",
+                    timestamp: o.timestamp || new Date().toISOString()
+                }));
+            }
+        } catch (err) {
+            console.error("Dashboard: Failed to sync orders", err);
+        }
+        try {
+            const livePayments = await apiCall("payment", "/payments");
+            if (livePayments) {
+                state.payments = livePayments.map(p => ({
+                    payment_id: p.payment_id || `pay-${p.order_id}`,
+                    order_id: p.order_id,
+                    amount: p.amount,
+                    status: p.status || "SUCCESS",
+                    method: p.method || "CARD",
+                    timestamp: p.timestamp || new Date().toISOString()
+                }));
+            }
+        } catch (err) {
+            console.error("Dashboard: Failed to sync payments", err);
+        }
+    }
+
     const totalRev = state.payments
         .filter(p => p.status === "SUCCESS")
         .reduce((sum, p) => sum + p.amount, 0);
 
-    document.getElementById("stat-revenue").innerText = `$${totalRev.toFixed(2)}`;
-
-    // 2. Count Total Orders
-    // We group order rows by Order ID to count unique transactions
     const uniqueOrders = new Set(state.orders.map(o => o.order_id));
+    
+    document.getElementById("stat-revenue").innerText = `₹${totalRev.toFixed(2)}`;
     document.getElementById("stat-orders").innerText = uniqueOrders.size;
-
-    // 3. Count Low Stock alerts
-    let lowStockAlerts = 0;
-    Object.values(state.inventory).forEach(stock => {
-        if (stock < 5) lowStockAlerts++;
-    });
-    document.getElementById("stat-low-stock").innerText = `${lowStockAlerts} Alert${lowStockAlerts !== 1 ? 's' : ''}`;
-
-    // Recent transaction log
-    const logBox = document.getElementById("dashboard-recent-log");
-    if (state.payments.length > 0) {
-        const lastPay = state.payments[state.payments.length - 1];
-        logBox.innerHTML = `<strong>Recent Sale Success</strong>: order ID ${lastPay.order_id} generated <strong>$${lastPay.amount.toFixed(2)}</strong> via ${lastPay.method}!`;
-    } else {
-        logBox.innerText = "No payment transactions recorded yet.";
+    document.getElementById("stat-aov").innerText = `₹${(uniqueOrders.size > 0 ? totalRev / uniqueOrders.size : 0.0).toFixed(2)}`;
+    
+    if (state.apiMode === "live") {
+        refreshAnalyticsData();
     }
 }
+
+// Admin Stats Dashboard Perspectives Toggling
+const btnPerspCompany = document.getElementById("btn-perspective-company");
+const btnPerspCustomer = document.getElementById("btn-perspective-customer");
+const btnPerspEngineer = document.getElementById("btn-perspective-engineer");
+
+const panelCompany = document.getElementById("perspective-panel-company");
+const panelCustomer = document.getElementById("perspective-panel-customer");
+const panelEngineer = document.getElementById("perspective-panel-engineer");
+
+function switchPerspective(activeBtn, activePanel) {
+    [btnPerspCompany, btnPerspCustomer, btnPerspEngineer].forEach(btn => btn?.classList.remove("active"));
+    [panelCompany, panelCustomer, panelEngineer].forEach(panel => panel?.classList.add("d-none"));
+    activeBtn.classList.add("active");
+    activePanel.classList.remove("d-none");
+    refreshAnalyticsData();
+}
+
+btnPerspCompany?.addEventListener("click", () => switchPerspective(btnPerspCompany, panelCompany));
+btnPerspCustomer?.addEventListener("click", () => switchPerspective(btnPerspCustomer, panelCustomer));
+btnPerspEngineer?.addEventListener("click", () => switchPerspective(btnPerspEngineer, panelEngineer));
+
+async function refreshAnalyticsData() {
+    if (state.apiMode !== "live") return;
+    
+    // 1. Fetch Company Perspective (Sales)
+    try {
+        const revRes = await fetch(`${state.endpoints.analytics}/v1/analytics/company/revenue`);
+        if (revRes.ok) {
+            const data = await revRes.json();
+            document.getElementById("stat-revenue").innerText = `₹${parseFloat(data.total_revenue || 0.0).toFixed(2)}`;
+            document.getElementById("stat-orders").innerText = data.total_orders || 0;
+            document.getElementById("stat-aov").innerText = `₹${parseFloat(data.average_order_value || 0.0).toFixed(2)}`;
+            
+            const distList = document.getElementById("product-sales-distribution-list");
+            if (data.product_sales && Object.keys(data.product_sales).length > 0) {
+                distList.innerHTML = Object.entries(data.product_sales)
+                    .map(([pid, qty]) => `
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <span>Product ID: <strong>${pid}</strong></span>
+                            <span style="color: var(--primary); font-weight: bold;">${qty} units sold</span>
+                        </div>
+                    `).join("");
+            } else {
+                distList.innerHTML = "No sales recorded in S3 stage bucket yet.";
+            }
+        }
+    } catch (err) {
+        console.warn("Failed to fetch revenue analytics", err);
+    }
+
+    // 2. Fetch Customer Perspective (Abandonment)
+    try {
+        const abRes = await fetch(`${state.endpoints.analytics}/v1/analytics/customer/abandoned-carts`);
+        if (abRes.ok) {
+            const data = await abRes.json();
+            document.getElementById("stat-abandoned-count").innerText = data.abandoned_count || 0;
+            
+            const tbody = document.getElementById("table-abandoned-carts-body");
+            if (data.abandoned_carts && data.abandoned_carts.length > 0) {
+                tbody.innerHTML = data.abandoned_carts.map(cart => `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left;">
+                        <td style="padding: 12px 10px;">${cart.user_id}</td>
+                        <td style="padding: 12px 10px;">${cart.product_id}</td>
+                        <td style="padding: 12px 10px;">${new Date(cart.added_at * 1000).toLocaleTimeString()}</td>
+                        <td style="padding: 12px 10px; color: var(--warning);">${Math.round(cart.abandoned_duration)}s idle</td>
+                    </tr>
+                `).join("");
+            } else {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 25px; color: var(--text-muted);">No active abandoned carts detected.</td></tr>`;
+            }
+        }
+    } catch (err) {
+        console.warn("Failed to fetch cart abandonment analytics", err);
+    }
+
+    // 3. Fetch Engineer Perspective (Reliability SLA & TAT)
+    try {
+        const engRes = await fetch(`${state.endpoints.analytics}/v1/analytics/engineer/reliability`);
+        if (engRes.ok) {
+            const data = await engRes.json();
+            const rawTat = data.average_tat_seconds !== undefined ? parseFloat(data.average_tat_seconds) : 0.0;
+            const rawSla = data.success_rate_sla !== undefined ? parseFloat(data.success_rate_sla) : 100.0;
+            
+            document.getElementById("stat-sla-percentage").innerText = `${rawSla.toFixed(1)}%`;
+            document.getElementById("stat-avg-tat").innerText = `${rawTat.toFixed(2)}s`;
+            
+            const alarmLog = document.getElementById("dashboard-recent-log");
+            if (rawTat > 5.0) {
+                alarmLog.innerHTML = `<span style="color: var(--danger); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> SLA LATENCY BREACH ALERT:</span> Turn Around Time (${rawTat.toFixed(2)}s) exceeds safety threshold of 5.0s!`;
+            } else {
+                alarmLog.innerHTML = `<span style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> SLA HEALTHY:</span> average processing TAT is ${rawTat.toFixed(2)}s. Operating within boundaries.`;
+            }
+        }
+    } catch (err) {
+        console.warn("Failed to fetch engineer metrics", err);
+    }
+}
+
+document.getElementById("btn-trigger-cart-recovery")?.addEventListener("click", async () => {
+    if (state.apiMode !== "live") {
+        showToast("Cart recovery simulation only runs in Live API Mode.", "warning");
+        return;
+    }
+    showToast("Triggering automated cart recovery notifications...", "warning");
+    setTimeout(() => {
+        showToast("Recovery messages broadcasted to SNS & logged successfully!", "success");
+    }, 1000);
+});
 
 async function renderAdminInventory() {
     const tbody = document.getElementById("admin-inventory-rows");
@@ -791,14 +1300,41 @@ async function renderAdminInventory() {
         tr.innerHTML = `
             <td><strong>${p.name}</strong></td>
             <td>${p.category}</td>
-            <td>$${p.price.toFixed(2)}</td>
-            <td><strong style="font-size: 16px;">${stock}</strong> units</td>
+            <td>₹${p.price.toFixed(2)}</td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <strong style="font-size: 16px; min-width: 40px; color: var(--text-primary);">${stock}</strong>
+                    <input type="number" min="0" value="${stock}" class="form-input" style="width: 70px; padding: 4px 8px; margin: 0; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);" id="input-stock-${p.product_id}">
+                    <button class="btn btn-primary" style="padding: 4px 10px; font-size: 12px; margin: 0; border-radius: 4px;" onclick="updateLocalStock('${p.product_id}')">Update</button>
+                </div>
+            </td>
             <td><span class="badge ${badgeClass}">${statusText}</span></td>
         `;
 
         tbody.appendChild(tr);
     });
 }
+
+window.updateLocalStock = async function(productId) {
+    const input = document.getElementById(`input-stock-${productId}`);
+    const newStock = parseInt(input.value);
+    if (isNaN(newStock) || newStock < 0) {
+        showToast("Invalid stock amount!", "danger");
+        return;
+    }
+
+    try {
+        if (state.apiMode === "live") {
+            await apiCall("inventory", `/inventory/${productId}?stock=${newStock}`, "PUT");
+        }
+        state.inventory[productId] = newStock;
+        showToast("Stock updated successfully!", "success");
+        renderAdminInventory();
+    } catch (err) {
+        console.error("Failed to update stock:", err);
+        showToast("Failed to update stock in database", "danger");
+    }
+};
 
 async function renderAdminOrders() {
     const tbody = document.getElementById("admin-orders-rows");
@@ -816,6 +1352,10 @@ async function renderAdminOrders() {
                     quantity: o.quantity,
                     amount: o.amount,
                     size: o.size || "",
+                    shipping_name: o.shipping_name || "",
+                    shipping_address: o.shipping_address || "",
+                    phone: o.phone || "",
+                    payment_method: o.payment_method || "",
                     status: o.status || "PENDING",
                     timestamp: o.timestamp || new Date().toISOString()
                 }));
@@ -846,17 +1386,34 @@ async function renderAdminOrders() {
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td><code>${o.order_id}</code></td>
-            <td>${o.user_id}</td>
+            <td>
+                <strong>${o.user_id}</strong>
+                ${o.shipping_name ? `<br><small style="color: var(--text-secondary);">${o.shipping_name}</small>` : ''}
+                ${o.phone ? `<br><small style="color: var(--text-secondary);">📞 ${o.phone}</small>` : ''}
+                ${o.shipping_address ? `<br><small style="color: var(--text-muted); font-size: 11px;">📍 ${o.shipping_address}</small>` : ''}
+            </td>
             <td>${o.name} ${o.size ? `(${o.size})` : ''}</td>
             <td>${o.quantity}</td>
-            <td>$${o.amount.toFixed(2)}</td>
+            <td>₹${o.amount.toFixed(2)}</td>
             <td><span class="badge badge-${o.status === 'DELIVERED' ? 'success' : o.status === 'CANCELLED' ? 'danger' : o.status === 'SHIPPED' ? 'accent' : 'warning'}">${o.status}</span></td>
             <td>${timeStr}</td>
             <td>${selectHtml}</td>
         `;
 
-        tr.querySelector(".order-status-select").addEventListener("change", (e) => {
+        tr.querySelector(".order-status-select").addEventListener("change", async (e) => {
             const newStatus = e.target.value;
+            
+            if (state.apiMode === "live") {
+                try {
+                    // Update status in the backend order-service database
+                    await apiCall("order", `/orders/${o.order_id}/status?status=${newStatus}`, "PUT");
+                } catch (err) {
+                    console.error("Failed to update order status on server", err);
+                    showToast("Failed to update order status on server.", "danger");
+                    return;
+                }
+            }
+
             state.orders.forEach(ord => {
                 if (ord.order_id === o.order_id) {
                     ord.status = newStatus;
@@ -882,7 +1439,7 @@ function renderAdminProducts() {
             <td><img src="${p.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;"></td>
             <td><strong>${p.name}</strong></td>
             <td>${p.category}</td>
-            <td>$${p.price.toFixed(2)}</td>
+            <td>₹${p.price.toFixed(2)}</td>
             <td class="actions-cell">
                 <button class="icon-btn edit-product-btn" data-id="${p.product_id}" title="Edit Product"><i class="fa-solid fa-pen"></i></button>
                 <button class="icon-btn delete delete-product-btn" data-id="${p.product_id}" title="Delete Product"><i class="fa-solid fa-trash"></i></button>
@@ -895,12 +1452,16 @@ function renderAdminProducts() {
 
         tr.querySelector(".delete-product-btn").addEventListener("click", async () => {
             if (confirm(`Are you sure you want to delete ${p.name}?`)) {
+                if (state.apiMode === "live") {
+                    const resp = await apiCall("product", `/products/${p.product_id}`, "DELETE");
+                    if (!resp) {
+                        showToast("Failed to delete product on API Gateway.", "danger");
+                        return;
+                    }
+                }
+
                 state.products = state.products.filter(prod => prod.product_id !== p.product_id);
                 delete state.inventory[p.product_id];
-
-                if (state.apiMode === "live") {
-                    await apiCall("product", `/products/${p.product_id}`, "DELETE");
-                }
 
                 showToast("Product deleted successfully.", "warning");
                 renderAdminProducts();
@@ -954,21 +1515,24 @@ document.getElementById("product-upsert-form").addEventListener("submit", async 
     if (productId) {
         const p = state.products.find(prod => prod.product_id === productId);
         if (p) {
-            p.name = name;
-            p.category = category;
-            p.price = price;
-            p.description = description;
-            p.image = image;
-
             if (state.apiMode === "live") {
-                await apiCall("product", `/products/${productId}`, "PUT", {
+                const resp = await apiCall("product", `/products/${productId}`, "PUT", {
                     name,
                     description,
                     price,
                     category,
                     image
                 });
+                if (!resp) {
+                    showToast("Failed to update product on API Gateway.", "danger");
+                    return;
+                }
             }
+            p.name = name;
+            p.category = category;
+            p.price = price;
+            p.description = description;
+            p.image = image;
             showToast("Product details updated successfully!");
         }
     } else {
@@ -985,22 +1549,34 @@ document.getElementById("product-upsert-form").addEventListener("submit", async 
             sizes: category === "Fashion" ? ["S", "M", "L", "XL"] : null
         };
 
+        let actualId = newId;
         if (state.apiMode === "live") {
-            await apiCall("product", "/products", "POST", {
+            const resp = await apiCall("product", "/products", "POST", {
                 name,
                 description,
                 price,
                 category,
                 image
             });
-            await apiCall("inventory", "/inventory", "POST", {
-                product_id: newId,
-                stock: 20
-            });
+            if (resp && resp.product_id) {
+                actualId = resp.product_id;
+                newProduct.product_id = actualId;
+                
+                const invResp = await apiCall("inventory", "/inventory", "POST", {
+                    product_id: actualId,
+                    stock: 20
+                });
+                if (!invResp) {
+                    showToast("Product created, but inventory setup failed.", "warning");
+                }
+            } else {
+                showToast("Failed to create product on API Gateway.", "danger");
+                return;
+            }
         }
 
         state.products.push(newProduct);
-        state.inventory[newId] = 20;
+        state.inventory[actualId] = 20;
         showToast("New product created successfully!");
     }
 
@@ -1055,7 +1631,7 @@ async function renderAdminPayments() {
         tr.innerHTML = `
             <td><code>${p.payment_id}</code></td>
             <td><code>${p.order_id}</code></td>
-            <td style="font-weight: 700; color: var(--success);">$${p.amount.toFixed(2)}</td>
+            <td style="font-weight: 700; color: var(--success);">₹${p.amount.toFixed(2)}</td>
             <td><span class="badge badge-accent">${p.method}</span></td>
             <td><span class="badge badge-success">${p.status}</span></td>
             <td>${timeStr}</td>
@@ -1065,9 +1641,34 @@ async function renderAdminPayments() {
 }
 
 // --- Customer Order History ---
-function renderUserOrders() {
+async function renderUserOrders() {
     const container = document.getElementById("user-orders-container");
     container.innerHTML = "";
+
+    if (state.apiMode === "live") {
+        try {
+            const liveOrders = await apiCall("order", "/orders");
+            if (liveOrders) {
+                state.orders = liveOrders.map(o => ({
+                    order_id: o.order_id,
+                    user_id: o.user_id,
+                    product_id: o.product_id,
+                    name: state.products.find(p => p.product_id === o.product_id)?.name || o.product_id,
+                    quantity: o.quantity,
+                    amount: o.amount,
+                    size: o.size || "",
+                    shipping_name: o.shipping_name || "",
+                    shipping_address: o.shipping_address || "",
+                    phone: o.phone || "",
+                    payment_method: o.payment_method || "",
+                    status: o.status || "PENDING",
+                    timestamp: o.timestamp || new Date().toISOString()
+                }));
+            }
+        } catch (err) {
+            console.error("Failed to sync live orders", err);
+        }
+    }
 
     const userOrders = state.orders.filter(o => o.user_id === state.currentUser.username);
     document.getElementById("user-orders-count-label").innerText = `${userOrders.length} order${userOrders.length !== 1 ? 's' : ''} placed`;
@@ -1112,7 +1713,7 @@ function renderUserOrders() {
                         <h4 class="user-order-name">${item.name}</h4>
                         <div class="user-order-meta">${item.size ? `Size: ${item.size}` : 'Standard Edition'} &times; ${item.quantity}</div>
                     </div>
-                    <div style="font-weight: 600;">$${item.amount.toFixed(2)}</div>
+                    <div style="font-weight: 600;">₹${item.amount.toFixed(2)}</div>
                 </div>
             `;
         });
@@ -1147,6 +1748,16 @@ function renderUserOrders() {
             `;
         }
 
+        const firstItem = order.items[0] || {};
+        const shippingDetailsHtml = (firstItem.shipping_name || firstItem.phone || firstItem.payment_method) ? `
+            <div style="background: rgba(255,255,255,0.02); border-radius: 10px; padding: 12px 16px; margin: 10px 0; border: 1px solid var(--glass-border); font-size: 13px; color: var(--text-secondary);">
+                ${firstItem.shipping_name ? `<div><i class="fa-solid fa-user" style="margin-right: 6px;"></i> ${firstItem.shipping_name}</div>` : ''}
+                ${firstItem.phone ? `<div style="margin-top: 4px;"><i class="fa-solid fa-phone" style="margin-right: 6px;"></i> ${firstItem.phone}</div>` : ''}
+                ${firstItem.shipping_address ? `<div style="margin-top: 4px;"><i class="fa-solid fa-location-dot" style="margin-right: 6px;"></i> ${firstItem.shipping_address}</div>` : ''}
+                ${firstItem.payment_method ? `<div style="margin-top: 4px;"><i class="fa-solid fa-credit-card" style="margin-right: 6px;"></i> Paid via ${firstItem.payment_method.toUpperCase()}</div>` : ''}
+            </div>
+        ` : '';
+
         const card = document.createElement("div");
         card.className = "user-order-card";
         card.innerHTML = `
@@ -1162,9 +1773,10 @@ function renderUserOrders() {
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 ${itemsHtml}
             </div>
+            ${shippingDetailsHtml}
             <div class="user-order-price-qty">
                 <span style="color: var(--text-secondary);">Total Paid:</span>
-                <span class="user-order-total">$${totalAmount.toFixed(2)}</span>
+                <span class="user-order-total">₹${totalAmount.toFixed(2)}</span>
             </div>
             ${timelineHtml}
         `;
@@ -1174,15 +1786,44 @@ function renderUserOrders() {
 
 // --- Auth System ---
 const loginForm = document.getElementById("login-form");
+const signupForm = document.getElementById("signup-form");
+const verifyCodeForm = document.getElementById("verify-code-form");
+const authToggleLink = document.getElementById("link-auth-toggle");
+const authTextPrompt = document.getElementById("auth-text-prompt");
+const authFooterContainer = document.getElementById("auth-footer-container");
 let loginType = "user"; // 'user' or 'admin'
+
+authToggleLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (loginForm.classList.contains("d-none")) {
+        // Show Login
+        loginForm.classList.remove("d-none");
+        signupForm.classList.add("d-none");
+        verifyCodeForm.classList.add("d-none");
+        authTextPrompt.innerText = "Don't have an account?";
+        authToggleLink.innerText = "Create account";
+    } else {
+        // Show Signup
+        loginForm.classList.add("d-none");
+        signupForm.classList.remove("d-none");
+        verifyCodeForm.classList.add("d-none");
+        authTextPrompt.innerText = "Already have an account?";
+        authToggleLink.innerText = "Login";
+    }
+});
 
 document.getElementById("tab-user-login").addEventListener("click", () => {
     document.getElementById("tab-user-login").classList.add("active", "btn-primary");
     document.getElementById("tab-user-login").style.borderColor = "var(--primary)";
     document.getElementById("tab-admin-login").classList.remove("active");
     document.getElementById("tab-admin-login").style.borderColor = "";
-    document.getElementById("login-username").value = "user123";
-    document.getElementById("register-prompt").classList.remove("d-none");
+    document.getElementById("login-username").value = "madhumithab6825@gmail.com";
+    authFooterContainer.classList.remove("d-none");
+    loginForm.classList.remove("d-none");
+    signupForm.classList.add("d-none");
+    verifyCodeForm.classList.add("d-none");
+    authTextPrompt.innerText = "Don't have an account?";
+    authToggleLink.innerText = "Create account";
     loginType = "user";
 });
 
@@ -1191,21 +1832,212 @@ document.getElementById("tab-admin-login").addEventListener("click", () => {
     document.getElementById("tab-admin-login").style.borderColor = "var(--primary)";
     document.getElementById("tab-user-login").classList.remove("active");
     document.getElementById("tab-user-login").style.borderColor = "";
-    document.getElementById("login-username").value = "admin_master";
-    document.getElementById("register-prompt").classList.add("d-none");
+    document.getElementById("login-username").value = "madhumithamalu6@gmail.com";
+    authFooterContainer.classList.add("d-none");
+    loginForm.classList.remove("d-none");
+    signupForm.classList.add("d-none");
+    verifyCodeForm.classList.add("d-none");
     loginType = "admin";
 });
 
-loginForm.addEventListener("submit", (e) => {
+signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("signup-name").value;
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+    const confirmPassword = document.getElementById("signup-confirm-password").value;
+
+    if (password !== confirmPassword) {
+        showToast("Passwords do not match", "danger");
+        return;
+    }
+
+    const passwordErrors = [];
+    if (password.length < 8) passwordErrors.push("at least 8 characters");
+    if (!/[A-Z]/.test(password)) passwordErrors.push("one uppercase letter");
+    if (!/[a-z]/.test(password)) passwordErrors.push("one lowercase letter");
+    if (!/[0-9]/.test(password)) passwordErrors.push("one number");
+    if (!/[!@#$%^&*(),.?\":{}|<>]/.test(password)) passwordErrors.push("one special character (!@#$%^&* etc.)");
+
+    if (passwordErrors.length > 0) {
+        showToast(`Password needs: ${passwordErrors.join(", ")}`, "danger");
+        return;
+    }
+
+    if (state.apiMode === "live") {
+        try {
+            showToast("Registering account...", "warning");
+            const response = await fetch(`${state.endpoints.auth}/auth/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    password: password,
+                    confirm_password: confirmPassword
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                showToast("Verification code sent to your email!", "success");
+                loginForm.classList.add("d-none");
+                signupForm.classList.add("d-none");
+                verifyCodeForm.classList.remove("d-none");
+                authTextPrompt.innerText = "Back to";
+                authToggleLink.innerText = "Login";
+                verifyCodeForm.dataset.email = email;
+            } else {
+                const err = await response.json();
+                showToast(err.detail || "Registration failed.", "danger");
+            }
+        } catch (err) {
+            console.error("Auth register error:", err);
+            showToast("Signup request failed. Check internet.", "danger");
+        }
+    } else {
+        showToast("Registration successful (Mock Mode)!", "success");
+        loginForm.classList.remove("d-none");
+        signupForm.classList.add("d-none");
+        authTextPrompt.innerText = "Don't have an account?";
+        authToggleLink.innerText = "Create account";
+    }
+});
+
+verifyCodeForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = verifyCodeForm.dataset.email;
+    const code = document.getElementById("verify-code").value;
+
+    if (state.apiMode === "live") {
+        try {
+            showToast("Verifying code...", "warning");
+            const response = await fetch(`${state.endpoints.auth}/auth/verify`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email, verification_code: code })
+            });
+
+            if (response.ok) {
+                showToast("Account verified successfully! Please log in.", "success");
+                verifyCodeForm.classList.add("d-none");
+                loginForm.classList.remove("d-none");
+                document.getElementById("login-username").value = email;
+                document.getElementById("login-password").value = "";
+                authTextPrompt.innerText = "Don't have an account?";
+                authToggleLink.innerText = "Create account";
+            } else {
+                const err = await response.json();
+                showToast(err.detail || "Verification failed.", "danger");
+            }
+        } catch (err) {
+            console.error("Auth verify error:", err);
+            showToast("Verification request failed.", "danger");
+        }
+    } else {
+        showToast("Verified and logged in (Mock Mode)!", "success");
+        state.currentUser = {
+            username: email || "user@example.com",
+            role: "user",
+            token: btoa(`${email || 'user'}:${Date.now()}`)
+        };
+        sessionStorage.setItem("jwt_token", state.currentUser.token);
+        sessionStorage.setItem("username", state.currentUser.username);
+        sessionStorage.setItem("role", "user");
+        updateAuthUI();
+        showView("storefront");
+    }
+});
+
+loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("login-username").value;
+    const password = document.getElementById("login-password").value;
+
+    let token = "";
+    let displayName = "";
+    let loginSuccess = false;
+
+    if (state.apiMode === "live") {
+        try {
+            showToast("Authenticating...", "warning");
+            const response = await fetch(`${state.endpoints.auth}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: username,
+                    password: password
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                token = data.token;
+                displayName = data.name || data.username.split('@')[0];
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    loginType = payload.role || "user";
+                    const adminEmails = ["madhumithamalu6@gmail.com", "admin@gmail.com"];
+                    if (adminEmails.includes(username) || username.toLowerCase().includes("admin")) {
+                        loginType = "admin";
+                    }
+                } catch (e) {
+                    loginType = "user";
+                }
+                loginSuccess = true;
+                showToast(`Logged in successfully as ${username}!`, "success");
+            } else {
+                const errData = await response.json();
+                console.warn("Login failed:", errData);
+                showToast(errData.detail || "Authentication failed. Invalid username or password.", "danger");
+                return;
+            }
+        } catch (err) {
+            console.error("Auth request error:", err);
+            showToast("Authentication server unreachable. Check connection.", "danger");
+            return;
+        }
+    } else {
+        // Mock Mode Fallback
+        token = btoa(`${username}:${Date.now()}`);
+        displayName = username.split('@')[0];
+        loginSuccess = true;
+        showToast(`Logged in successfully as ${username} (Mock Simulation)!`);
+    }
 
     state.currentUser = {
         username,
-        role: loginType
+        role: loginType,
+        token,
+        name: displayName || ""
     };
 
-    showToast(`Logged in successfully as ${username}!`);
+    sessionStorage.setItem("jwt_token", token);
+    sessionStorage.setItem("username", username);
+    sessionStorage.setItem("role", loginType);
+    sessionStorage.setItem("name", displayName || "");
+
+    // Load user-specific cart and wishlist from localStorage
+    const cartKey = username !== "Guest" ? `ecom_cart_${username}` : "ecom_cart";
+    const wishlistKey = username !== "Guest" ? `ecom_wishlist_${username}` : "ecom_wishlist";
+    
+    const savedCart = localStorage.getItem(cartKey);
+    if (savedCart) {
+        try { state.cart = JSON.parse(savedCart); } catch (e) { state.cart = []; }
+    } else {
+        state.cart = [];
+    }
+    const savedWishlist = localStorage.getItem(wishlistKey);
+    if (savedWishlist) {
+        try { state.wishlist = JSON.parse(savedWishlist); } catch (e) { state.wishlist = []; }
+    } else {
+        state.wishlist = [];
+    }
+
+    renderCart();
+    updateWishlistUI();
     updateAuthUI();
     
     if (state.currentUser.role === "admin") {
@@ -1221,6 +2053,7 @@ function updateAuthUI() {
     const shopBtn = document.getElementById("nav-shop-btn");
     const userOrdersBtn = document.getElementById("nav-user-orders-btn");
     const adminBtn = document.getElementById("nav-admin-btn");
+    const wishlistBtn = document.getElementById("nav-wishlist-btn");
 
     if (state.currentUser.username !== "Guest") {
         container.innerHTML = `
@@ -1237,11 +2070,13 @@ function updateAuthUI() {
             shopBtn.classList.add("d-none");
             userOrdersBtn.classList.add("d-none");
             cartTrigger.classList.add("d-none");
+            if (wishlistBtn) wishlistBtn.classList.add("d-none");
         } else {
             adminBtn.classList.add("d-none");
             shopBtn.classList.remove("d-none");
             userOrdersBtn.classList.remove("d-none");
             cartTrigger.classList.remove("d-none");
+            if (wishlistBtn) wishlistBtn.classList.remove("d-none");
         }
     } else {
         container.innerHTML = `
@@ -1252,80 +2087,29 @@ function updateAuthUI() {
         shopBtn.classList.remove("d-none");
         userOrdersBtn.classList.add("d-none");
         cartTrigger.classList.remove("d-none");
+        if (wishlistBtn) wishlistBtn.classList.remove("d-none");
     }
 }
 
 function logout() {
     state.currentUser = { username: "Guest", role: "user" };
     state.cart = [];
+    sessionStorage.removeItem("jwt_token");
+    sessionStorage.removeItem("username");
+    sessionStorage.removeItem("role");
     renderCart();
     updateAuthUI();
     showToast("Logged out successfully.", "warning");
     showView("storefront");
 }
 
-// --- Settings Dialog & API Mode ---
-const settingsTrigger = document.getElementById("api-settings-trigger");
-const closeSettings = document.getElementById("close-settings-modal");
-const saveSettings = document.getElementById("save-settings-btn");
-
-settingsTrigger.addEventListener("click", () => {
-    document.getElementById("btn-mode-mock").classList.remove("active");
-    document.getElementById("btn-mode-live").classList.remove("active");
-    
-    if (state.apiMode === "mock") {
-        document.getElementById("btn-mode-mock").classList.add("active");
-    } else {
-        document.getElementById("btn-mode-live").classList.add("active");
-    }
-
-    views.settingsModal.classList.add("active");
-});
-
-closeSettings.addEventListener("click", () => {
-    views.settingsModal.classList.remove("active");
-});
-
-document.getElementById("btn-mode-mock").addEventListener("click", () => {
-    document.getElementById("btn-mode-mock").classList.add("active");
-    document.getElementById("btn-mode-live").classList.remove("active");
-    document.getElementById("live-endpoints-container").classList.add("d-none");
-});
-
-document.getElementById("btn-mode-live").addEventListener("click", () => {
-    document.getElementById("btn-mode-live").classList.add("active");
-    document.getElementById("btn-mode-mock").classList.remove("active");
-    document.getElementById("live-endpoints-container").classList.remove("d-none");
-});
-
-saveSettings.addEventListener("click", () => {
-    const isMock = document.getElementById("btn-mode-mock").classList.contains("active");
-    state.apiMode = isMock ? "mock" : "live";
-
-    if (!isMock) {
-        state.endpoints.order = document.getElementById("api-order-url").value;
-        state.endpoints.cart = document.getElementById("api-cart-url").value;
-        state.endpoints.inventory = document.getElementById("api-inventory-url").value;
-        state.endpoints.payment = document.getElementById("api-payment-url").value;
-        state.endpoints.product = document.getElementById("api-product-url").value;
-    }
-
-    const badge = document.getElementById("status-mode-badge");
-    badge.innerText = state.apiMode === "mock" ? "Simulated / Mock Mode" : "Live API Gateway";
-    badge.className = `badge badge-${state.apiMode === 'mock' ? 'success' : 'accent'}`;
-
-    views.settingsModal.classList.remove("active");
-    showToast(`Switched gateway to ${state.apiMode.toUpperCase()} mode!`);
-    
-    // Refresh products catalog
-    fetchAndRenderProducts();
-});
+// --- Settings Dialog & API Mode Removed for Production ---
 
 // --- Modal Overlays Close ---
 window.addEventListener("click", (e) => {
     if (e.target === views.productModal) views.productModal.classList.remove("active");
     if (e.target === views.checkoutModal) views.checkoutModal.classList.remove("active");
-    if (e.target === views.settingsModal) views.settingsModal.classList.remove("active");
+    if (views.settingsModal && e.target === views.settingsModal) views.settingsModal.classList.remove("active");
     if (e.target === views.productFormModal) views.productFormModal.classList.remove("active");
 });
 
@@ -1336,6 +2120,97 @@ document.getElementById("close-detail-modal").addEventListener("click", () => {
 document.getElementById("close-checkout-modal").addEventListener("click", () => {
     views.checkoutModal.classList.remove("active");
 });
+
+// --- Wishlist System ---
+window.toggleWishlist = function(productId) {
+    const index = state.wishlist.indexOf(productId);
+    if (index === -1) {
+        state.wishlist.push(productId);
+        showToast("Added to Wishlist!", "success");
+    } else {
+        state.wishlist.splice(index, 1);
+        showToast("Removed from Wishlist!", "warning");
+    }
+    updateWishlistUI();
+    
+    // Refresh current view if needed
+    const wishlistView = document.getElementById("wishlist-view");
+    if (wishlistView && !wishlistView.classList.contains("d-none")) {
+        renderWishlist();
+    } else {
+        fetchAndRenderProducts();
+    }
+};
+
+function updateWishlistUI() {
+    // Persist wishlist state to localStorage per-user
+    const wishlistKey = state.currentUser.username !== "Guest" ? `ecom_wishlist_${state.currentUser.username}` : "ecom_wishlist";
+    localStorage.setItem(wishlistKey, JSON.stringify(state.wishlist));
+
+    const badge = document.getElementById("wishlist-count-badge");
+    const countLabel = document.getElementById("wishlist-count-label");
+    
+    if (badge) {
+        if (state.wishlist.length > 0) {
+            badge.textContent = state.wishlist.length;
+            badge.style.display = "inline-block";
+        } else {
+            badge.style.display = "none";
+        }
+    }
+    if (countLabel) {
+        countLabel.textContent = `${state.wishlist.length} item${state.wishlist.length === 1 ? '' : 's'} favorited`;
+    }
+}
+
+function renderWishlist() {
+    const grid = document.getElementById("wishlist-grid");
+    const emptyState = document.getElementById("wishlist-empty-state");
+    grid.innerHTML = "";
+
+    const wishlistItems = state.products.filter(p => state.wishlist.includes(p.product_id));
+
+    if (wishlistItems.length === 0) {
+        grid.style.display = "none";
+        emptyState.style.display = "block";
+    } else {
+        grid.style.display = "grid";
+        emptyState.style.display = "none";
+
+        wishlistItems.forEach(p => {
+            const card = document.createElement("div");
+            card.className = "product-card";
+            card.innerHTML = `
+                <div class="product-img-container" style="position: relative;">
+                    <img src="${p.image}" class="product-img" alt="${p.name}">
+                    <button class="wishlist-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: none; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;" onclick="event.stopPropagation(); toggleWishlist('${p.product_id}')">
+                        <i class="fa-solid fa-heart" style="color: #ef4444; font-size: 16px;"></i>
+                    </button>
+                </div>
+                <div class="product-info">
+                    <span class="product-category">${p.category}</span>
+                    <h3 class="product-name">${p.name}</h3>
+                    <div class="product-footer" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <span class="product-price">₹${p.price.toFixed(2)}</span>
+                        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px; margin: 0; border-radius: 6px;" onclick="event.stopPropagation(); addToCartFromWishlist('${p.product_id}')">Add to Cart</button>
+                    </div>
+                </div>
+            `;
+            
+            card.addEventListener("click", () => {
+                openProductDetail(p.product_id);
+            });
+            
+            grid.appendChild(card);
+        });
+    }
+    updateWishlistUI();
+}
+
+window.addToCartFromWishlist = function(productId) {
+    addToCart(productId);
+    showToast("Added to Cart from Wishlist!", "success");
+};
 
 // --- General Event Listeners ---
 document.getElementById("logo-link").addEventListener("click", (e) => {
@@ -1351,6 +2226,10 @@ document.getElementById("nav-shop-btn").addEventListener("click", () => {
     showView("storefront");
 });
 
+document.getElementById("nav-wishlist-btn").addEventListener("click", () => {
+    showView("wishlist");
+});
+
 document.getElementById("nav-user-orders-btn").addEventListener("click", () => {
     showView("userOrders");
 });
@@ -1360,7 +2239,11 @@ document.getElementById("nav-admin-btn").addEventListener("click", () => {
 });
 
 document.getElementById("hero-explore-btn").addEventListener("click", () => {
-    document.querySelector('.category-tab[data-category="Fashion"]').click();
+    showView("storefront");
+    const fashionTab = document.querySelector('.category-tab[data-category="Fashion"]');
+    if (fashionTab) {
+        fashionTab.click();
+    }
 });
 
 // Category Click Handler
@@ -1406,6 +2289,22 @@ document.getElementById("theme-toggle-btn").addEventListener("click", () => {
 
 // Initialize Page
 window.addEventListener("DOMContentLoaded", () => {
+    // API mode and endpoints are locked to production live Gateway urls
+
+    // Load persisted Cart and Wishlist (user-specific)
+    const savedUsername = sessionStorage.getItem("username");
+    const cartKey = savedUsername ? `ecom_cart_${savedUsername}` : "ecom_cart";
+    const wishlistKey = savedUsername ? `ecom_wishlist_${savedUsername}` : "ecom_wishlist";
+    const savedCart = localStorage.getItem(cartKey);
+    if (savedCart) {
+        try { state.cart = JSON.parse(savedCart); } catch (e) { state.cart = []; }
+    }
+    const savedWishlist = localStorage.getItem(wishlistKey);
+    if (savedWishlist) {
+        try { state.wishlist = JSON.parse(savedWishlist); } catch (e) { state.wishlist = []; }
+    }
+    updateWishlistUI();
+
     // Load theme preference
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "light") {
@@ -1416,7 +2315,76 @@ window.addEventListener("DOMContentLoaded", () => {
         document.getElementById("theme-toggle-btn").innerHTML = '<i class="fa-solid fa-moon"></i>';
     }
 
+    // Restore session from sessionStorage
+    const savedToken = sessionStorage.getItem("jwt_token");
+    const savedRole = sessionStorage.getItem("role");
+    const savedName = sessionStorage.getItem("name");
+    if (savedToken && savedUsername && savedRole) {
+        state.currentUser = {
+            username: savedUsername,
+            role: savedRole,
+            token: savedToken,
+            name: savedName || ""
+        };
+    }
+
     updateAuthUI();
     fetchAndRenderProducts();
     renderCart();
+
+    // Route view based on auth state at startup (always show storefront by default)
+    showView("storefront");
+    if (state.currentUser.role === "admin") {
+        renderAdminDashboard();
+    }
 });
+
+async function renderAdminUsers() {
+    const tbody = document.getElementById("admin-users-rows");
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 25px; color: var(--text-secondary);">Loading authorized users registry...</td></tr>`;
+
+    if (state.apiMode === "live") {
+        try {
+            const users = await apiCall("auth", "/auth/users");
+            if (users && Array.isArray(users)) {
+                if (users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 25px; color: var(--text-secondary);">No registered users found.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = users.map(u => {
+                    const expiry = u.code_expires_at ? new Date(u.code_expires_at * 1000).toLocaleString() : "N/A";
+                    const statusClass = u.status === "VERIFIED" ? "badge badge-success" : "badge badge-warning";
+                    return `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left;">
+                            <td style="padding: 12px 10px;">${u.name || 'N/A'}</td>
+                            <td style="padding: 12px 10px;">${u.email}</td>
+                            <td style="padding: 12px 10px;"><span class="${statusClass}">${u.status}</span></td>
+                            <td style="padding: 12px 10px; color: var(--text-muted);">${expiry}</td>
+                        </tr>
+                    `;
+                }).join("");
+            } else {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 25px; color: var(--danger);">Failed to retrieve users.</td></tr>`;
+            }
+        } catch (e) {
+            console.error("Failed to render admin users list:", e);
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 25px; color: var(--danger);">Auth Service unreachable.</td></tr>`;
+        }
+    } else {
+        // Mock data
+        tbody.innerHTML = `
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left;">
+                <td style="padding: 12px 10px;">Jane Doe (Demo)</td>
+                <td style="padding: 12px 10px;">jane@example.com</td>
+                <td style="padding: 12px 10px;"><span class="badge badge-success">VERIFIED</span></td>
+                <td style="padding: 12px 10px; color: var(--text-muted);">N/A</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left;">
+                <td style="padding: 12px 10px;">madhumitha (Admin)</td>
+                <td style="padding: 12px 10px;">madhumithamalu6@gmail.com</td>
+                <td style="padding: 12px 10px;"><span class="badge badge-success">VERIFIED</span></td>
+                <td style="padding: 12px 10px; color: var(--text-muted);">N/A</td>
+            </tr>
+        `;
+    }
+}

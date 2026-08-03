@@ -1,0 +1,12 @@
+{
+    "event_type": "order_status_update",
+    "timestamp": 1785067682.1634007,
+    "data": {
+        "order_id": "0b4c69f5-5bba-42cc-be9a-e1b28cdeb68f",
+        "status": "PENDING",
+        "product_id": "prod-groc-001",
+        "user_id": "lak@gmail.com",
+        "amount": 24.5,
+        "quantity": 1
+    }
+}
