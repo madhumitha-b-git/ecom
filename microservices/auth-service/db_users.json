@@ -1,0 +1,11 @@
+{
+    "madhumithab6825@gmail.com": {
+        "email": "madhumithab6825@gmail.com",
+        "name": "Mad",
+        "password_hash": "f448dead2121688cb38e520965677617ee723a2f482cf9d4461a2530128aecbf",
+        "salt": "b6707818a9a7b70164e9fe559a1156ab",
+        "status": "VERIFICATION_PENDING",
+        "verification_code": "519197",
+        "code_expires_at": 1785494813
+    }
+}

@@ -1,0 +1,15 @@
+# Ignore everything in this service by default
+*
+
+# Keep the core service source files and dependency packages needed for zipping
+!.gitignore
+!config.py
+!database.py
+!exceptions.py
+!logger.py
+!main.py
+!model.py
+!requirements.txt
+!service.py
+!package/
+!package/**

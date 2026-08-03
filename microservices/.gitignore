@@ -1,0 +1,33 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.log
+
+# Virtual environments
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.*
+
+# Build
+dist/
+build/
+
+# AWS SAM
+.aws-sam/
+
+# Terraform
+.terraform/
+
+# Node
+node_modules/
+
+# Lambda layers (all services)
+**/layer/
+**/layer/python/
