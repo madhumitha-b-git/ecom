@@ -1,3 +1,7 @@
+from aws_xray_sdk.core import xray_recorder, patch_all
+from aws_xray_sdk.ext.fastapi.middleware import FastAPIMiddleware
+patch_all()
+
 from fastapi import FastAPI, Request, Depends, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
@@ -9,6 +13,7 @@ import service
 
 logger = get_logger(__name__)
 app = FastAPI(title="Cart Service", version="1.0.0")
+app.add_middleware(FastAPIMiddleware, recorder=xray_recorder)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 register_handlers(app)
 
