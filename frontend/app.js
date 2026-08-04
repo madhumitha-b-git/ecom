@@ -1004,7 +1004,7 @@ async function sendOrderConfirmationEmail(orderItems, totalPaid) {
 
     if (state.apiMode === "live") {
         try {
-            await fetch(`${state.endpoints.auth}/auth/send-order-email`, {
+            await fetch(`${state.endpoints.auth}v1/auth/send-order-email`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -1867,7 +1867,7 @@ signupForm.addEventListener("submit", async (e) => {
     if (state.apiMode === "live") {
         try {
             showToast("Registering account...", "warning");
-            const response = await fetch(`${state.endpoints.auth}/auth/register`, {
+            const response = await fetch(`${state.endpoints.auth}v1/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -1912,7 +1912,7 @@ verifyCodeForm.addEventListener("submit", async (e) => {
     if (state.apiMode === "live") {
         try {
             showToast("Verifying code...", "warning");
-            const response = await fetch(`${state.endpoints.auth}/auth/verify`, {
+            const response = await fetch(`${state.endpoints.auth}v1/auth/verify`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: email, verification_code: code })
@@ -1961,7 +1961,7 @@ loginForm.addEventListener("submit", async (e) => {
     if (state.apiMode === "live") {
         try {
             showToast("Authenticating...", "warning");
-            const response = await fetch(`${state.endpoints.auth}/auth/login`, {
+            const response = await fetch(`${state.endpoints.auth}v1/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
