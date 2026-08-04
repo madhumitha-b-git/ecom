@@ -32,9 +32,12 @@ def _from_decimal(item: dict) -> dict:
     return {k: float(v) if isinstance(v, Decimal) else v for k, v in item.items()}
 
 
+from urllib.parse import quote
+
 def _call_inventory_decrement(product_id: str, quantity: int) -> None:
     """Call inventory-service over HTTP to decrement stock. (Kept for reference / rollback; no longer called from create_order.)"""
-    url = f"{settings.INVENTORY_SERVICE_URL}/v1/inventory/{product_id}/decrement"
+    safe_product_id = quote(product_id)
+    url = f"{settings.INVENTORY_SERVICE_URL}/v1/inventory/{safe_product_id}/decrement"
     try:
         response = httpx.post(url, params={"quantity": quantity}, timeout=5.0)
     except httpx.RequestError as e:
@@ -131,7 +134,8 @@ def create_order(order: Order) -> dict:
             try:
                 # Step A: Decrement inventory stock over HTTP
                 headers = {"Authorization": "Bearer dXNlcjEyMzoxNzIwMDAwMDAw"}
-                inv_url = f"{settings.INVENTORY_SERVICE_URL}/v1/inventory/{order.product_id}/decrement"
+                safe_product_id = quote(order.product_id)
+                inv_url = f"{settings.INVENTORY_SERVICE_URL}/v1/inventory/{safe_product_id}/decrement"
                 logger.info("LocalPipeline | Requesting stock decrement at: %s", inv_url)
                 inv_resp = httpx.post(inv_url, params={"quantity": order.quantity}, headers=headers, timeout=5.0)
                 
