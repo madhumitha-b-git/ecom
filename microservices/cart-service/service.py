@@ -10,9 +10,12 @@ from config import settings
 logger = get_logger(__name__)
 
 
+from urllib.parse import quote
+
 def _validate_product(product_id: str) -> None:
     try:
-        resp = httpx.get(f"{settings.PRODUCT_SERVICE_URL}/v1/products/{product_id}", timeout=5.0)
+        safe_product_id = quote(product_id)
+        resp = httpx.get(f"{settings.PRODUCT_SERVICE_URL}/v1/products/{safe_product_id}", timeout=5.0)
         if resp.status_code == 404:
             raise ProductNotFoundError()
         resp.raise_for_status()
