@@ -5,6 +5,12 @@ import sys
 def deploy():
     build_only = "--build-only" in sys.argv
     deploy_only = "--deploy-only" in sys.argv
+    
+    target_service = None
+    if "--service" in sys.argv:
+        idx = sys.argv.index("--service")
+        if idx + 1 < len(sys.argv):
+            target_service = sys.argv[idx + 1]
 
     # List of your microservices
     services = [
@@ -17,6 +23,13 @@ def deploy():
         "product-service"
     ]
     
+    if target_service:
+        if target_service in services:
+            services = [target_service]
+        else:
+            print(f"Error: Unknown service {target_service}")
+            sys.exit(1)
+            
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "microservices"))
     
     for service in services:
