@@ -269,5 +269,5 @@ def send_order_confirmation(req) -> dict:
         logger.error("SMTP | Unexpected error sending order email: %s", e)
         return {"message": "Email delivery failed", "order_id": req.order_id}
 
-# Trigger SonarCloud scan refresh v2
+# Trigger SonarCloud scan refresh v3
 
