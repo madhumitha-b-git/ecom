@@ -2345,7 +2345,7 @@ async function renderAdminUsers() {
 
     if (state.apiMode === "live") {
         try {
-            const users = await apiCall("auth", "/auth/users");
+            const users = await apiCall("auth", "/v1/auth/users");
             if (users && Array.isArray(users)) {
                 if (users.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 25px; color: var(--text-secondary);">No registered users found.</td></tr>`;
