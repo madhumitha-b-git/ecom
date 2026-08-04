@@ -29,7 +29,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install Linting & Testing Dependencies
-        run: pip install flake8==7.0.0 --only-binary :all: pytest boto3 fastapi
+        run: pip install flake8==7.0.0 pytest boto3 fastapi
 
       - name: Run Flake8 Linter
         run: flake8 microservices/product-service/ --max-line-length=120 --ignore=E402,W503,F401 --exit-zero
