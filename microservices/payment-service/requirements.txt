@@ -3,4 +3,3 @@ pydantic==2.10.0
 pydantic-settings==2.2.1
 mangum==0.17.0
 
-aws-xray-sdk==2.12.0
