@@ -203,7 +203,7 @@ def send_order_confirmation(req) -> dict:
     from email.mime.multipart import MIMEMultipart
 
     SENDER = settings.SMTP_SENDER
-    SUBJECT = f"Order Confirmed #{req.order_id} - E-Shop"
+    SUBJECT = f"Order Confirmed #{req.order_id} - ShopEase"
 
     items_html = "".join([
         f'<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;">'
@@ -218,7 +218,7 @@ def send_order_confirmation(req) -> dict:
     body_html = f"""
     <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
         <div style="background:linear-gradient(135deg,#0a0f1d,#1b2641);padding:30px;text-align:center;">
-            <h1 style="color:#f0c14b;margin:0;font-size:24px;">&#128722; E-Shop Order Confirmed!</h1>
+            <h1 style="color:#f0c14b;margin:0;font-size:24px;">&#128722; ShopEase Order Confirmed!</h1>
         </div>
         <div style="padding:30px;">
             <p style="font-size:16px;color:#333;">Hi <strong>{req.user_name}</strong>,</p>

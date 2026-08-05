@@ -5,8 +5,8 @@
     --bg-primary: #0a0f1d;
     --bg-secondary: #131b2e;
     --bg-tertiary: #1b2641;
-    --primary: #f0c14b;
-    --primary-hover: #ddb347;
+    --primary: #ff9900;
+    --primary-hover: #e47911;
     --text-primary: #ffffff;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
@@ -17,7 +17,7 @@
     --danger: #ef4444;
     --glass-bg: rgba(19, 27, 46, 0.7);
     --glass-border: rgba(255, 255, 255, 0.08);
-    --glow-yellow: 0 0 15px rgba(240, 193, 75, 0.35);
+    --glow-yellow: 0 0 15px rgba(255, 153, 0, 0.35);
     --glow-blue: 0 0 15px rgba(56, 189, 248, 0.35);
     --header-bg: rgba(10, 15, 29, 0.85);
     --hero-gradient: linear-gradient(135deg, #1b2641 0%, #0a0f1d 100%);
