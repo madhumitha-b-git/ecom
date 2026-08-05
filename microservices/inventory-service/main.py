@@ -98,7 +98,9 @@ def _publish_inventory_result(order_id: str, product_id: str, quantity: int, amo
     )
     logger.info("Inventory result published: order_id=%s status=%s", order_id, status)
     try:
-        httpx.post("http://localhost:8005/v1/analytics/publish-event", json={
+        import os
+        analytics_url = os.environ.get("ANALYTICS_SERVICE_URL", "http://localhost:8005")
+        httpx.post(f"{analytics_url}/v1/analytics/publish-event", json={
             "event_type": "order_status_update",
             "data": {
                 "order_id": order_id,

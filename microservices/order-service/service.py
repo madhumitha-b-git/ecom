@@ -83,8 +83,10 @@ def _call_payment_create(order_id: str, amount: float) -> str:
 
 
 def _publish_analytics_event(event_type: str, data: dict):
+    import os
+    analytics_url = os.environ.get("ANALYTICS_SERVICE_URL", "http://localhost:8005")
     try:
-        httpx.post("http://localhost:8005/v1/analytics/publish-event", json={
+        httpx.post(f"{analytics_url}/v1/analytics/publish-event", json={
             "event_type": event_type,
             "data": data
         }, timeout=1.0)
