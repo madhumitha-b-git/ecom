@@ -37,7 +37,7 @@ def deploy():
         if not os.path.isdir(service_dir):
             continue
             
-        print(f"\n{'='*50}\n🚀 Processing {service}...\n{'='*50}")
+        print(f"\n{'='*50}\n[*] Processing {service}...\n{'='*50}")
         os.chdir(service_dir)
         
         # 1. Build the zip file if a build script exists
