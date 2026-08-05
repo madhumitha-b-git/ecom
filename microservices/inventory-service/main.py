@@ -50,7 +50,7 @@ def get_all_inventory(username: str = Depends(verify_jwt_token)):
 
 
 @router.get("/inventory/{product_id}", summary="Get stock level")
-def get_inventory(product_id: str, username: str = Depends(verify_jwt_token)):
+def get_inventory(product_id: str):
     return service.get_inventory(product_id)
 
 
@@ -60,7 +60,7 @@ def update_inventory(product_id: str, stock: int = Query(..., ge=0), username: s
 
 
 @router.post("/inventory/{product_id}/decrement", summary="Decrement stock (internal)")
-def decrement_stock(product_id: str, quantity: int = Query(..., gt=0), username: str = Depends(verify_jwt_token)):
+def decrement_stock(product_id: str, quantity: int = Query(..., gt=0)):
     """Internal endpoint called by order-service to reduce stock when an order is placed."""
     return service.decrement_stock(product_id, quantity)
 

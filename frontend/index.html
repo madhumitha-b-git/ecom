@@ -11,6 +11,13 @@
 </head>
 <body>
 
+    <!-- Promo Notification Bar -->
+    <div class="promo-bar">
+        <span>⚡ 10% MEGA OFFER on selected categories!</span>
+        <span>🚚 FREE DELIVERY on all orders above ₹999!</span>
+        <span>🎁 BUY 2 GET 2 FREE Flash Sale - Limited Days Only!</span>
+    </div>
+
     <!-- Header Navigation -->
     <header>
         <div class="container nav-bar">
@@ -74,6 +81,31 @@
                 <h1 class="hero-title">Amazon-Grade Microservice Frontend</h1>
                 <p class="hero-desc">Interact with FastAPI backends: Product, Order, Cart, Inventory, and Payment services with real-time logs.</p>
                 <button class="btn" id="hero-explore-btn">Start Shopping <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Promo Badges / Offers -->
+        <div class="offers-container">
+            <div class="offer-card mega-offer">
+                <div class="offer-icon"><i class="fa-solid fa-tags"></i></div>
+                <div class="offer-text">
+                    <h4>10% MEGA OFFER</h4>
+                    <p>Applied automatically on top fashion & accessories.</p>
+                </div>
+            </div>
+            <div class="offer-card free-delivery">
+                <div class="offer-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="offer-text">
+                    <h4>FREE DELIVERY</h4>
+                    <p>On all purchases above ₹999. No coupon required.</p>
+                </div>
+            </div>
+            <div class="offer-card buy-get">
+                <div class="offer-icon"><i class="fa-solid fa-gift"></i></div>
+                <div class="offer-text">
+                    <h4>BUY 2 GET 2 FREE</h4>
+                    <p>Flash promotion active on books & toys.</p>
+                </div>
             </div>
         </div>
 
@@ -256,6 +288,22 @@
                                 <span class="stat-label">Average Order Value</span>
                                 <span class="stat-value glow-green" id="stat-aov">₹0.00</span>
                                 <span class="stat-trend" style="color: var(--text-secondary);">Revenue / Order count</span>
+                            </div>
+                        </div>
+
+                        <!-- Sales History Graph -->
+                        <div class="card-panel" style="margin-top: 20px;">
+                            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 15px;">
+                                <h3 class="panel-title"><i class="fa-solid fa-chart-line"></i> Sales Analytics Report</h3>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn btn-secondary btn-time-period" id="btn-period-7" style="font-size: 11px; padding: 4px 8px;">7 Days</button>
+                                    <button class="btn btn-secondary btn-time-period active" id="btn-period-30" style="font-size: 11px; padding: 4px 8px;">30 Days</button>
+                                </div>
+                            </div>
+                            <div style="padding: 10px;">
+                                <div style="position: relative; height: 220px; width: 100%;">
+                                    <canvas id="sales-report-chart" width="700" height="220" style="width: 100%; height: 100%; display: block;"></canvas>
+                                </div>
                             </div>
                         </div>
 

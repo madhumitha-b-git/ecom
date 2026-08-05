@@ -37,7 +37,7 @@ def health():
 
 
 @router.post("/payments", status_code=201, summary="Process payment")
-def create_payment(payment: Payment, username: str = Depends(verify_jwt_token)):
+def create_payment(payment: Payment):
     return service.create_payment(payment)
 
 

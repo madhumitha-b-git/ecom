@@ -202,7 +202,7 @@ def send_order_confirmation(req) -> dict:
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
 
-    SENDER = "madhumithamalu6@gmail.com"
+    SENDER = settings.SMTP_SENDER
     SUBJECT = f"Order Confirmed #{req.order_id} - E-Shop"
 
     items_html = "".join([
