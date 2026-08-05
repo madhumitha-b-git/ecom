@@ -194,7 +194,7 @@ def get_orders() -> list[dict]:
 
 def get_orders_for_user(username: str) -> list[dict]:
     all_orders = get_orders()
-    return [o for o in all_orders if o.get("user_id") == username]
+    return [o for o in all_orders if str(o.get("user_id")).strip().lower() == username.strip().lower()]
 
 
 def get_order(order_id: str) -> dict:
