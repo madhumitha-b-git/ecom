@@ -300,7 +300,14 @@ function showView(viewName) {
 async function apiCall(service, path, method = "GET", body = null) {
     if (state.apiMode === "mock") return null;
 
-    const url = `${state.endpoints[service]}${path}`;
+    // Ensure path starts with /v1/
+    let cleanPath = path;
+    if (!path.startsWith("/v1/") && path !== "/v1") {
+        cleanPath = path.startsWith("/") ? `/v1${path}` : `/v1/${path}`;
+    }
+
+    const baseUrl = state.endpoints[service];
+    const url = `${baseUrl}${cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath}`;
     try {
         const options = {
             method,
@@ -1100,6 +1107,127 @@ adminTabButtons.forEach(btn => {
     });
 });
 
+let currentPeriodDays = 30;
+
+function drawSalesReportChart(daysLimit = 30) {
+    const canvas = document.getElementById("sales-report-chart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const dates = [];
+    const dateValues = {};
+    for (let i = daysLimit - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const label = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        dates.push(label);
+        dateValues[label] = 0;
+    }
+
+    const successOrders = state.orders.filter(o => o.status === "SUCCESS");
+    successOrders.forEach(o => {
+        const oDate = new Date(o.timestamp);
+        const label = oDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        if (label in dateValues) {
+            dateValues[label] += Number(o.amount);
+        }
+    });
+
+    const dataPoints = dates.map(lbl => dateValues[lbl]);
+    const maxVal = Math.max(...dataPoints, 100);
+
+    const padding = { top: 20, right: 20, bottom: 30, left: 50 };
+    const chartWidth = canvas.width - padding.left - padding.right;
+    const chartHeight = canvas.height - padding.top - padding.bottom;
+
+    ctx.strokeStyle = "rgba(255,255,255,0.05)";
+    ctx.lineWidth = 1;
+    const gridCount = 4;
+    for (let i = 0; i <= gridCount; i++) {
+        const y = padding.top + (chartHeight / gridCount) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(canvas.width - padding.right, y);
+        ctx.stroke();
+
+        const val = maxVal - (maxVal / gridCount) * i;
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(`₹${Math.round(val)}`, padding.left - 10, y + 3);
+    }
+
+    const stepX = chartWidth / (daysLimit - 1);
+    const labelStep = Math.max(1, Math.round(daysLimit / 6));
+    dates.forEach((date, idx) => {
+        if (idx % labelStep === 0 || idx === daysLimit - 1) {
+            const x = padding.left + idx * stepX;
+            ctx.fillStyle = "rgba(255,255,255,0.4)";
+            ctx.font = "10px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(date, x, canvas.height - 10);
+        }
+    });
+
+    ctx.beginPath();
+    dates.forEach((_, idx) => {
+        const x = padding.left + idx * stepX;
+        const val = dataPoints[idx];
+        const y = padding.top + chartHeight - (val / maxVal) * chartHeight;
+        if (idx === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+
+    const isLight = document.body.classList.contains("light-theme");
+    const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
+    gradient.addColorStop(0, isLight ? "rgba(217, 119, 6, 0.3)" : "rgba(240, 193, 75, 0.2)");
+    gradient.addColorStop(1, "rgba(240, 193, 75, 0.0)");
+
+    ctx.fillStyle = gradient;
+    
+    const areaCtx = canvas.getContext("2d");
+    areaCtx.beginPath();
+    dates.forEach((_, idx) => {
+        const x = padding.left + idx * stepX;
+        const val = dataPoints[idx];
+        const y = padding.top + chartHeight - (val / maxVal) * chartHeight;
+        if (idx === 0) {
+            areaCtx.moveTo(x, padding.top + chartHeight);
+            areaCtx.lineTo(x, y);
+        } else {
+            areaCtx.lineTo(x, y);
+        }
+    });
+    areaCtx.lineTo(padding.left + (daysLimit - 1) * stepX, padding.top + chartHeight);
+    areaCtx.closePath();
+    areaCtx.fill();
+
+    ctx.strokeStyle = isLight ? "#d97706" : "#f0c14b";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    dates.forEach((_, idx) => {
+        const val = dataPoints[idx];
+        if (val > 0) {
+            const x = padding.left + idx * stepX;
+            const y = padding.top + chartHeight - (val / maxVal) * chartHeight;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, 2 * Math.PI);
+            ctx.fillStyle = isLight ? "#d97706" : "#ffffff";
+            ctx.strokeStyle = isLight ? "#ffffff" : "#f0c14b";
+            ctx.lineWidth = 2;
+            ctx.fill();
+            ctx.stroke();
+        }
+    });
+}
+
 async function renderAdminDashboard() {
     // Fetch live data in live mode for accurate stats
     if (state.apiMode === "live") {
@@ -1152,6 +1280,10 @@ async function renderAdminDashboard() {
     document.getElementById("stat-orders").innerText = uniqueOrders.size;
     document.getElementById("stat-aov").innerText = `₹${(uniqueOrders.size > 0 ? totalRev / uniqueOrders.size : 0.0).toFixed(2)}`;
     
+    setTimeout(() => {
+        drawSalesReportChart(currentPeriodDays);
+    }, 100);
+
     if (state.apiMode === "live") {
         refreshAnalyticsData();
     }
@@ -2331,6 +2463,22 @@ window.addEventListener("DOMContentLoaded", () => {
     updateAuthUI();
     fetchAndRenderProducts();
     renderCart();
+
+    // Sales Chart Period Toggles
+    const btnPeriod7 = document.getElementById("btn-period-7");
+    const btnPeriod30 = document.getElementById("btn-period-30");
+    btnPeriod7?.addEventListener("click", () => {
+        btnPeriod30.classList.remove("active");
+        btnPeriod7.classList.add("active");
+        currentPeriodDays = 7;
+        drawSalesReportChart(7);
+    });
+    btnPeriod30?.addEventListener("click", () => {
+        btnPeriod7.classList.remove("active");
+        btnPeriod30.classList.add("active");
+        currentPeriodDays = 30;
+        drawSalesReportChart(30);
+    });
 
     // Route view based on auth state at startup (always show storefront by default)
     showView("storefront");

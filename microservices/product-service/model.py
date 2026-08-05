@@ -6,9 +6,10 @@ class Product(BaseModel):
     description: str
     category: str
     price: float
+    image: str = ""
 
     model_config = {
         "json_schema_extra": {
-            "examples": [{"name": "Headphones", "description": "Wireless", "category": "Electronics", "price": 89.99}]
+            "examples": [{"name": "Headphones", "description": "Wireless", "category": "Electronics", "price": 89.99, "image": "https://example.com/image.jpg"}]
         }
     }

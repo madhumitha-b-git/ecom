@@ -14,6 +14,10 @@ class OutOfStockError(Exception):
     pass
 
 
+class PaymentFailedError(Exception):
+    pass
+
+
 class ProductNotFoundError(Exception):
     pass
 
@@ -34,6 +38,10 @@ def register_handlers(app: FastAPI) -> None:
     @app.exception_handler(OutOfStockError)
     async def ___(_: Request, ____: OutOfStockError):
         return JSONResponse(status_code=400, content={"detail": "Out Of Stock"})
+
+    @app.exception_handler(PaymentFailedError)
+    async def ______(_: Request, _______: PaymentFailedError):
+        return JSONResponse(status_code=400, content={"detail": "Payment Failed"})
 
     @app.exception_handler(ProductNotFoundError)
     async def ____(_: Request, _____: ProductNotFoundError):
