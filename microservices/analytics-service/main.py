@@ -1,7 +1,3 @@
-from aws_xray_sdk.core import xray_recorder, patch_all
-from aws_xray_sdk.ext.asgi.middleware import ASGIMiddleware
-patch_all()
-
 from fastapi import FastAPI, Request, APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
@@ -12,7 +8,6 @@ import database
 
 logger = get_logger(__name__)
 app = FastAPI(title="Analytics Service", version="1.0.0")
-app.add_middleware(ASGIMiddleware)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 router = APIRouter()

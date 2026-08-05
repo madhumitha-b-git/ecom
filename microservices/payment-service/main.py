@@ -1,7 +1,3 @@
-from aws_xray_sdk.core import xray_recorder, patch_all
-from aws_xray_sdk.ext.asgi.middleware import ASGIMiddleware
-patch_all()
-
 import json
 import httpx
 from fastapi import FastAPI, Request, Depends, APIRouter
@@ -16,7 +12,6 @@ import service
 
 logger = get_logger(__name__)
 app = FastAPI(title="Payment Service", version="1.0.0")
-app.add_middleware(ASGIMiddleware)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 register_handlers(app)
 
