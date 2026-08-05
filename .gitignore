@@ -17,3 +17,6 @@ deploy.zip
 
 # OS files
 .DS_Store
+
+# Package fresh build cache
+**/package_fresh/
