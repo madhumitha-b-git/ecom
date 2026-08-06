@@ -96,96 +96,85 @@ def _publish_analytics_event(event_type: str, data: dict):
 
 def create_order(order: Order) -> dict:
     """
-    Synchronous order fulfillment pipeline:
-    1. Check stock. Raise OutOfStockError if not enough.
-    2. Decrement stock.
-    3. Process payment.
-    4. Save order to database (SUCCESS or FAILED).
-    5. Trigger analytics update event.
+    1. Persist order in own DynamoDB table with status PENDING.
+    2. Try to publish OrderCreated event to SNS (async).
+    3. Fallback to direct HTTP synchronous validation if offline.
     """
     import datetime
-    from urllib.parse import quote
     order_id = "order-" + str(uuid.uuid4())[:8]
     timestamp = datetime.datetime.utcnow().isoformat() + "Z"
-    safe_product_id = quote(order.product_id)
-
-    # A. Check stock level first
-    stock_url = f"{settings.INVENTORY_SERVICE_URL}/v1/inventory/{safe_product_id}"
-    try:
-        stock_resp = httpx.get(stock_url, timeout=5.0)
-        if stock_resp.status_code == 404:
-            raise InventoryNotFoundError()
-        stock_resp.raise_for_status()
-        stock_data = stock_resp.json()
-        current_stock = int(stock_data.get("stock", 0))
-        if current_stock < order.quantity:
-            logger.warning("OrderFailed | Insufficient stock: product=%s, available=%d, requested=%d", order.product_id, current_stock, order.quantity)
-            raise OutOfStockError()
-    except httpx.RequestError as e:
-        logger.error("Inventory service unreachable for stock check: %s", e)
-        raise InventoryNotFoundError()
-
-    # B. Decrement stock level
-    inv_url = f"{settings.INVENTORY_SERVICE_URL}/v1/inventory/{safe_product_id}/decrement"
-    try:
-        inv_resp = httpx.post(inv_url, params={"quantity": order.quantity}, timeout=5.0)
-        if inv_resp.status_code != 200:
-            logger.warning("OrderFailed | Stock decrement rejected: %s", inv_resp.status_code)
-            raise OutOfStockError()
-    except Exception as e:
-        logger.error("Error during stock decrement: %s", e)
-        raise OutOfStockError()
-
-    # C. Charge payment
-    pay_url = f"{settings.PAYMENT_SERVICE_URL}/v1/payments"
-    payment_success = False
-    try:
-        pay_resp = httpx.post(pay_url, json={"order_id": order_id, "amount": float(order.amount)}, timeout=5.0)
-        if pay_resp.status_code == 201:
-            payment_success = True
-        else:
-            logger.warning("OrderFailed | Payment service rejected charge: %s", pay_resp.status_code)
-    except Exception as e:
-        logger.error("Error processing payment: %s", e)
-
-    if not payment_success:
-        # Rollback stock decrement (compensating transaction)
-        logger.info("LocalPipeline | Rolling back stock decrement for order: %s", order_id)
-        try:
-            # Restore stock by resetting to original level
-            httpx.put(f"{settings.INVENTORY_SERVICE_URL}/v1/inventory/{safe_product_id}", params={"stock": current_stock}, timeout=5.0)
-        except Exception as rollback_err:
-            logger.error("LocalPipeline | Failed to rollback stock decrement: %s", rollback_err)
-
-        # Save order as FAILED
-        item = _to_decimal({"order_id": order_id, **order.model_dump(), "status": "FAILED", "timestamp": timestamp})
-        get_table().put_item(Item=item)
-        _publish_analytics_event("order_status_update", {
-            "order_id": order_id,
-            "status": "FAILED",
-            "product_id": order.product_id,
-            "user_id": order.user_id,
-            "amount": float(order.amount),
-            "quantity": order.quantity
-        })
-        raise PaymentFailedError()
-
-    # Success path
-    item = _to_decimal({"order_id": order_id, **order.model_dump(), "status": "SUCCESS", "timestamp": timestamp})
+    item = _to_decimal({"order_id": order_id, **order.model_dump(), "status": "PENDING", "timestamp": timestamp})
     get_table().put_item(Item=item)
-    
-    # Publish status updates to analytics
+    logger.info("Order PENDING | order_id=%s user=%s", order_id, order.user_id)
+
+    # Publish initial PENDING status event to analytics
     _publish_analytics_event("order_status_update", {
         "order_id": order_id,
-        "status": "SUCCESS",
+        "status": "PENDING",
         "product_id": order.product_id,
         "user_id": order.user_id,
         "amount": float(order.amount),
         "quantity": order.quantity
     })
-    
-    logger.info("Order SUCCESS | order_id=%s user=%s", order_id, order.user_id)
-    return {"message": "Order Created", "order_id": order_id, "status": "SUCCESS"}
+
+    # Try to publish via AWS SNS (live cloud async event flow)
+    sns_success = False
+    try:
+        _publish_order_created(order_id, order.product_id, order.quantity, order.amount, order.user_id)
+        sns_success = True
+    except Exception as e:
+        logger.warning("SNS | Failed to publish OrderCreated event: %s. Falling back to local HTTP pipeline...", e)
+
+    # Local fallback verification trigger
+    use_local_fallback = not sns_success or type(get_table()).__name__ == "LocalOrderDB"
+    if use_local_fallback:
+        import threading
+        import time
+        
+        def run_local_pipeline():
+            time.sleep(1.0)  # Simulated validation latency delay
+            try:
+                # Step A: Decrement inventory stock over HTTP
+                headers = {"Authorization": "Bearer dXNlcjEyMzoxNzIwMDAwMDAw"}
+                inv_url = f"{settings.INVENTORY_SERVICE_URL}/v1/inventory/{order.product_id}/decrement"
+                logger.info("LocalPipeline | Requesting stock decrement at: %s", inv_url)
+                inv_resp = httpx.post(inv_url, params={"quantity": order.quantity}, headers=headers, timeout=5.0)
+                
+                if inv_resp.status_code != 200:
+                    logger.warning("LocalPipeline | Stock reservation failed for product: %s, response: %s", order.product_id, inv_resp.status_code)
+                    update_order_status(order_id, "INVENTORY_FAILED")
+                    return
+                
+                _publish_analytics_event("order_status_update", {
+                    "order_id": order_id,
+                    "status": "INVENTORY_RESERVED",
+                    "product_id": order.product_id,
+                    "user_id": order.user_id,
+                    "amount": float(order.amount),
+                    "quantity": order.quantity
+                })
+
+                # Step B: Record payment over HTTP
+                pay_url = f"{settings.PAYMENT_SERVICE_URL}/v1/payments"
+                logger.info("LocalPipeline | Requesting payment charge at: %s", pay_url)
+                pay_resp = httpx.post(pay_url, json={"order_id": order_id, "amount": float(order.amount)}, headers=headers, timeout=5.0)
+                
+                if pay_resp.status_code != 201:
+                    logger.warning("LocalPipeline | Payment failed for order: %s, response: %s", order_id, pay_resp.status_code)
+                    update_order_status(order_id, "FAILED")
+                    return
+
+                # Success
+                update_order_status(order_id, "SUCCESS")
+                logger.info("LocalPipeline | Order verification succeeded for order_id: %s", order_id)
+
+            except Exception as ex:
+                logger.error("LocalPipeline | Error running local verification pipeline: %s", ex)
+                update_order_status(order_id, "FAILED")
+
+        threading.Thread(target=run_local_pipeline).start()
+
+    return {"message": "Order Created", "order_id": order_id}
 
 
 def get_orders() -> list[dict]:
