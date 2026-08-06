@@ -1,33 +1,33 @@
 /* style.css - Premium Modern E-Commerce Stylesheet */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    --bg-primary: #0a0f1d;
-    --bg-secondary: #131b2e;
-    --bg-tertiary: #1b2641;
-    --primary: #ff9900;
-    --primary-hover: #e47911;
-    --text-primary: #ffffff;
+    --bg-primary: #080c14;
+    --bg-secondary: #0f1626;
+    --bg-tertiary: #1b253b;
+    --primary: #f59e0b;
+    --primary-hover: #d97706;
+    --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    --accent: #38bdf8;
-    --accent-hover: #0284c7;
+    --accent: #3b82f6;
+    --accent-hover: #1d4ed8;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
-    --glass-bg: rgba(19, 27, 46, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glow-yellow: 0 0 15px rgba(255, 153, 0, 0.35);
-    --glow-blue: 0 0 15px rgba(56, 189, 248, 0.35);
-    --header-bg: rgba(10, 15, 29, 0.85);
-    --hero-gradient: linear-gradient(135deg, #1b2641 0%, #0a0f1d 100%);
+    --glass-bg: rgba(15, 22, 38, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --glow-yellow: 0 0 20px rgba(245, 158, 11, 0.25);
+    --glow-blue: 0 0 20px rgba(59, 130, 246, 0.25);
+    --header-bg: rgba(8, 12, 20, 0.8);
+    --hero-gradient: linear-gradient(135deg, #131b2e 0%, #080c14 100%);
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 body {
