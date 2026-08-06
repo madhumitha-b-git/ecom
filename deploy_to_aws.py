@@ -65,11 +65,11 @@ def deploy():
                 result = subprocess.run(cmd, capture_output=True, text=True)
                 
                 if result.returncode == 0:
-                    print(f"✅ Successfully deployed {service}!")
+                    print(f"[SUCCESS] Successfully deployed {service}!")
                 else:
-                    print(f"❌ Failed to deploy {service}: {result.stderr}")
+                    print(f"[ERROR] Failed to deploy {service}: {result.stderr}")
             else:
-                print(f"❌ Failed: deploy.zip was not generated for {service}")
+                print(f"[ERROR] Failed: deploy.zip was not generated for {service}")
 
 if __name__ == "__main__":
     deploy()

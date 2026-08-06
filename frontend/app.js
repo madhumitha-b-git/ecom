@@ -2550,7 +2550,7 @@ async function renderAdminUsers() {
                     `;
                 }).join("");
             } else {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 25px; color: var(--danger);">Failed to retrieve users.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 25px; color: var(--danger);">rieve users.</td></tr>`;
             }
         } catch (e) {
             console.error("Failed to render admin users list:", e);
