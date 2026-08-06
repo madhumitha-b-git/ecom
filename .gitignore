@@ -20,3 +20,5 @@ deploy.zip
 
 # Package fresh build cache
 **/package_fresh/
+**/package/
+**/lambda_build/
