@@ -1145,7 +1145,11 @@ adminTabButtons.forEach(btn => {
         } else if (btn.dataset.adminPanel === "users") {
             renderAdminUsers();
         }
-   let salesReportChartInstance = null;
+    });
+});
+
+let currentPeriodDays = 30;
+let salesReportChartInstance = null;
 
 function drawSalesReportChart(daysLimit = 30) {
     const canvas = document.getElementById("sales-report-chart");
