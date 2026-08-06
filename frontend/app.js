@@ -347,6 +347,18 @@ async function fetchAndRenderProducts() {
                 image: p.image || "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&q=80",
                 sizes: p.category === "Fashion" ? ["S", "M", "L", "XL"] : null
             }));
+            
+            // Sync inventory for all products
+            try {
+                await Promise.all(state.products.map(async p => {
+                    const inv = await apiCall("inventory", `/inventory/${p.product_id}`);
+                    if (inv && inv.stock !== undefined) {
+                        state.inventory[p.product_id] = inv.stock;
+                    }
+                }));
+            } catch (err) {
+                console.error("Failed to sync live inventory during catalog load", err);
+            }
         }
     }
 
@@ -390,14 +402,21 @@ async function fetchAndRenderProducts() {
         const heartColor = isWishlisted ? "#ef4444" : "rgba(255,255,255,0.4)";
         const heartIcon = isWishlisted ? "fa-solid fa-heart" : "fa-regular fa-heart";
 
+        const stock = state.inventory[p.product_id] !== undefined ? state.inventory[p.product_id] : 10;
+        const isOutOfStock = stock === 0;
+
         const card = document.createElement("div");
         card.className = "product-card";
+        if (isOutOfStock) {
+            card.style.opacity = "0.75";
+        }
         card.innerHTML = `
             <div class="product-img-container" style="position: relative;">
                 <img src="${p.image}" class="product-img" alt="${p.name}">
                 <button class="wishlist-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: none; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;" onclick="event.stopPropagation(); toggleWishlist('${p.product_id}')">
                     <i class="${heartIcon}" style="color: ${heartColor}; font-size: 16px;"></i>
                 </button>
+                ${isOutOfStock ? `<div style="position: absolute; bottom: 10px; left: 10px; background: var(--danger); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">OUT OF STOCK</div>` : ''}
             </div>
             <div class="product-info">
                 <span class="product-category">${p.category}</span>
@@ -477,11 +496,15 @@ function openProductDetail(productId) {
                 <div class="modal-admin-badge">
                     <i class="fa-solid fa-user-shield"></i> Admin View Only - Shopping Disabled
                 </div>
+            ` : (state.inventory[product.product_id] === 0 ? `
+                <button class="btn btn-secondary" style="margin-top: 15px; height: 50px; background: #666; cursor: not-allowed;" disabled>
+                    <i class="fa-solid fa-ban"></i> Out of Stock
+                </button>
             ` : `
                 <button class="btn" id="modal-add-to-cart-btn" style="margin-top: 15px; height: 50px;">
                     <i class="fa-solid fa-shopping-cart"></i> Add to Shopping Cart
                 </button>
-            `}
+            `)}
         </div>
     `;
 
@@ -498,7 +521,7 @@ function openProductDetail(productId) {
     }
 
     // Add to Cart Handler
-    if (state.currentUser.role !== 'admin') {
+    if (state.currentUser.role !== 'admin' && state.inventory[product.product_id] > 0) {
         document.getElementById("modal-add-to-cart-btn").addEventListener("click", () => {
             addToCart(product.product_id, 1, state.selectedCheckoutSize);
             views.productModal.classList.remove("active");
@@ -529,8 +552,15 @@ function addToCart(productId, qty = 1, size = null) {
     const product = state.products.find(p => p.product_id === productId);
     if (!product) return;
 
-    // Check if item already exists in cart with same size
+    const stock = state.inventory[productId] !== undefined ? state.inventory[productId] : 10;
     const existing = state.cart.find(i => i.product_id === productId && i.size === size);
+    const currentQty = existing ? existing.quantity : 0;
+
+    if (currentQty + qty > stock) {
+        showToast(`Cannot add more items than the available stock quantity (${stock} items max)!`, "danger");
+        return;
+    }
+
     if (existing) {
         existing.quantity += qty;
     } else {
@@ -553,6 +583,14 @@ function addToCart(productId, qty = 1, size = null) {
 function updateCartQuantity(cartId, delta) {
     const item = state.cart.find(i => i.cart_id === cartId);
     if (!item) return;
+
+    if (delta > 0) {
+        const stock = state.inventory[item.product_id] !== undefined ? state.inventory[item.product_id] : 10;
+        if (item.quantity + delta > stock) {
+            showToast(`Cannot add more items than the available stock quantity (${stock} items max)!`, "danger");
+            return;
+        }
+    }
 
     item.quantity += delta;
     if (item.quantity <= 0) {
