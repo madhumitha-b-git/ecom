@@ -8,7 +8,6 @@ on:
     paths:
       - 'microservices/inventory-service/**'
       - '.github/workflows/inventory-service.yml'
-      - 'deploy_to_aws.py'
   pull_request:
     paths:
       - 'microservices/inventory-service/**'

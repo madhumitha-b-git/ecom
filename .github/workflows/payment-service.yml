@@ -8,7 +8,6 @@ on:
     paths:
       - 'microservices/payment-service/**'
       - '.github/workflows/payment-service.yml'
-      - 'deploy_to_aws.py'
   pull_request:
     paths:
       - 'microservices/payment-service/**'

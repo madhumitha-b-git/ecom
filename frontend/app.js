@@ -1145,18 +1145,11 @@ adminTabButtons.forEach(btn => {
         } else if (btn.dataset.adminPanel === "users") {
             renderAdminUsers();
         }
-    });
-});
-
-let currentPeriodDays = 30;
+   let salesReportChartInstance = null;
 
 function drawSalesReportChart(daysLimit = 30) {
     const canvas = document.getElementById("sales-report-chart");
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const dates = [];
     const dateValues = {};
@@ -1178,93 +1171,77 @@ function drawSalesReportChart(daysLimit = 30) {
     });
 
     const dataPoints = dates.map(lbl => dateValues[lbl]);
-    const maxVal = Math.max(...dataPoints, 100);
 
-    const padding = { top: 20, right: 20, bottom: 30, left: 50 };
-    const chartWidth = canvas.width - padding.left - padding.right;
-    const chartHeight = canvas.height - padding.top - padding.bottom;
-
-    ctx.strokeStyle = "rgba(255,255,255,0.05)";
-    ctx.lineWidth = 1;
-    const gridCount = 4;
-    for (let i = 0; i <= gridCount; i++) {
-        const y = padding.top + (chartHeight / gridCount) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(canvas.width - padding.right, y);
-        ctx.stroke();
-
-        const val = maxVal - (maxVal / gridCount) * i;
-        ctx.fillStyle = "rgba(255,255,255,0.4)";
-        ctx.font = "10px sans-serif";
-        ctx.textAlign = "right";
-        ctx.fillText(`₹${Math.round(val)}`, padding.left - 10, y + 3);
+    if (salesReportChartInstance) {
+        salesReportChartInstance.destroy();
     }
 
-    const stepX = chartWidth / (daysLimit - 1);
-    const labelStep = Math.max(1, Math.round(daysLimit / 6));
-    dates.forEach((date, idx) => {
-        if (idx % labelStep === 0 || idx === daysLimit - 1) {
-            const x = padding.left + idx * stepX;
-            ctx.fillStyle = "rgba(255,255,255,0.4)";
-            ctx.font = "10px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(date, x, canvas.height - 10);
-        }
-    });
-
-    ctx.beginPath();
-    dates.forEach((_, idx) => {
-        const x = padding.left + idx * stepX;
-        const val = dataPoints[idx];
-        const y = padding.top + chartHeight - (val / maxVal) * chartHeight;
-        if (idx === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
-    });
-
     const isLight = document.body.classList.contains("light-theme");
-    const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
+    const gridColor = isLight ? "rgba(0, 0, 0, 0.05)" : "rgba(255, 255, 255, 0.05)";
+    const textColor = isLight ? "#6b7280" : "rgba(255, 255, 255, 0.4)";
+    const lineColor = isLight ? "#d97706" : "#f0c14b";
+    
+    const ctx = canvas.getContext("2d");
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height || 220);
     gradient.addColorStop(0, isLight ? "rgba(217, 119, 6, 0.3)" : "rgba(240, 193, 75, 0.2)");
     gradient.addColorStop(1, "rgba(240, 193, 75, 0.0)");
 
-    ctx.fillStyle = gradient;
-    
-    const areaCtx = canvas.getContext("2d");
-    areaCtx.beginPath();
-    dates.forEach((_, idx) => {
-        const x = padding.left + idx * stepX;
-        const val = dataPoints[idx];
-        const y = padding.top + chartHeight - (val / maxVal) * chartHeight;
-        if (idx === 0) {
-            areaCtx.moveTo(x, padding.top + chartHeight);
-            areaCtx.lineTo(x, y);
-        } else {
-            areaCtx.lineTo(x, y);
-        }
-    });
-    areaCtx.lineTo(padding.left + (daysLimit - 1) * stepX, padding.top + chartHeight);
-    areaCtx.closePath();
-    areaCtx.fill();
-
-    ctx.strokeStyle = isLight ? "#d97706" : "#f0c14b";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    dates.forEach((_, idx) => {
-        const val = dataPoints[idx];
-        if (val > 0) {
-            const x = padding.left + idx * stepX;
-            const y = padding.top + chartHeight - (val / maxVal) * chartHeight;
-            ctx.beginPath();
-            ctx.arc(x, y, 4, 0, 2 * Math.PI);
-            ctx.fillStyle = isLight ? "#d97706" : "#ffffff";
-            ctx.strokeStyle = isLight ? "#ffffff" : "#f0c14b";
-            ctx.lineWidth = 2;
-            ctx.fill();
-            ctx.stroke();
+    salesReportChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Revenue',
+                data: dataPoints,
+                borderColor: lineColor,
+                backgroundColor: gradient,
+                borderWidth: 2,
+                pointBackgroundColor: lineColor,
+                pointBorderColor: isLight ? "#fff" : "#232f3e",
+                pointHoverBackgroundColor: isLight ? "#fff" : "#232f3e",
+                pointHoverBorderColor: lineColor,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `₹${context.parsed.y.toFixed(2)}`;
+                        }
+                    },
+                    backgroundColor: isLight ? "rgba(255, 255, 255, 0.9)" : "rgba(0, 0, 0, 0.8)",
+                    titleColor: isLight ? "#111827" : "#fff",
+                    bodyColor: isLight ? "#111827" : "#fff",
+                    borderColor: isLight ? "#e5e7eb" : "#4b5563",
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: textColor,
+                        maxTicksLimit: Math.max(1, Math.round(daysLimit / 6))
+                    }
+                },
+                y: {
+                    grid: { color: gridColor },
+                    ticks: {
+                        color: textColor,
+                        callback: function(value) { return '₹' + value; }
+                    },
+                    beginAtZero: true,
+                    suggestedMax: Math.max(...dataPoints, 100)
+                }
+            }
         }
     });
 }
@@ -1357,7 +1334,7 @@ async function refreshAnalyticsData() {
     // 1. Fetch Company Perspective (Sales)
     try {
         const data = await apiCall("analytics", "/analytics/company/revenue");
-        if (data) {
+        if (data && data.total_revenue !== undefined) {
             document.getElementById("stat-revenue").innerText = `₹${parseFloat(data.total_revenue || 0.0).toFixed(2)}`;
             document.getElementById("stat-orders").innerText = data.total_orders || 0;
             document.getElementById("stat-aov").innerText = `₹${parseFloat(data.average_order_value || 0.0).toFixed(2)}`;
