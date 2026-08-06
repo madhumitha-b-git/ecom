@@ -11,9 +11,10 @@ from exceptions import (
     VerificationCodeInvalidError
 )
 from logger import get_logger
+import os
 
 logger = get_logger(__name__)
-JWT_SECRET = "super-secret-ecom-key-12345"
+JWT_SECRET = os.environ.get("JWT_SECRET", "super-secret-ecom-key-12345")
 
 def base64url_encode(data: bytes) -> str:
     import base64
