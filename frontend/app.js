@@ -1315,9 +1315,8 @@ async function refreshAnalyticsData() {
     
     // 1. Fetch Company Perspective (Sales)
     try {
-        const revRes = await fetch(`${state.endpoints.analytics}/v1/analytics/company/revenue`);
-        if (revRes.ok) {
-            const data = await revRes.json();
+        const data = await apiCall("analytics", "/analytics/company/revenue");
+        if (data) {
             document.getElementById("stat-revenue").innerText = `₹${parseFloat(data.total_revenue || 0.0).toFixed(2)}`;
             document.getElementById("stat-orders").innerText = data.total_orders || 0;
             document.getElementById("stat-aov").innerText = `₹${parseFloat(data.average_order_value || 0.0).toFixed(2)}`;
@@ -1341,9 +1340,8 @@ async function refreshAnalyticsData() {
 
     // 2. Fetch Customer Perspective (Abandonment)
     try {
-        const abRes = await fetch(`${state.endpoints.analytics}/v1/analytics/customer/abandoned-carts`);
-        if (abRes.ok) {
-            const data = await abRes.json();
+        const data = await apiCall("analytics", "/analytics/customer/abandoned-carts");
+        if (data) {
             document.getElementById("stat-abandoned-count").innerText = data.abandoned_count || 0;
             
             const tbody = document.getElementById("table-abandoned-carts-body");
@@ -1366,9 +1364,8 @@ async function refreshAnalyticsData() {
 
     // 3. Fetch Engineer Perspective (Reliability SLA & TAT)
     try {
-        const engRes = await fetch(`${state.endpoints.analytics}/v1/analytics/engineer/reliability`);
-        if (engRes.ok) {
-            const data = await engRes.json();
+        const data = await apiCall("analytics", "/analytics/engineer/reliability");
+        if (data) {
             const rawTat = data.average_tat_seconds !== undefined ? parseFloat(data.average_tat_seconds) : 0.0;
             const rawSla = data.success_rate_sla !== undefined ? parseFloat(data.success_rate_sla) : 100.0;
             

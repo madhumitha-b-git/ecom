@@ -18,7 +18,16 @@ register_handlers(app)
 
 router = APIRouter()
 
-INVENTORY_RESULT_TOPIC_ARN = "arn:aws:sns:ap-southeast-1:726101441380:inventory-result_ecom"
+def _get_account_id() -> str:
+    try:
+        if getattr(settings, "AWS_PROFILE", None):
+            session = boto3.Session(profile_name=settings.AWS_PROFILE)
+            return session.client("sts").get_caller_identity()["Account"]
+        return boto3.client("sts").get_caller_identity()["Account"]
+    except Exception:
+        return "726101441380"
+
+INVENTORY_RESULT_TOPIC_ARN = f"arn:aws:sns:{settings.AWS_REGION}:{_get_account_id()}:inventory-result_ecom"
 
 
 @app.middleware("http")

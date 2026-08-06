@@ -21,7 +21,16 @@ try:
 except Exception as e:
     logger.warning("SNS | Failed to initialize SNS client: %s. Using local HTTP triggers fallback.", e)
 
-ORDER_CREATED_TOPIC_ARN = "arn:aws:sns:ap-southeast-1:726101441380:order-event_ecom"
+def _get_account_id() -> str:
+    try:
+        if getattr(settings, "AWS_PROFILE", None):
+            session = boto3.Session(profile_name=settings.AWS_PROFILE)
+            return session.client("sts").get_caller_identity()["Account"]
+        return boto3.client("sts").get_caller_identity()["Account"]
+    except Exception:
+        return "726101441380"
+
+ORDER_CREATED_TOPIC_ARN = f"arn:aws:sns:{settings.AWS_REGION}:{_get_account_id()}:order-event_ecom"
 
 
 def _to_decimal(item: dict) -> dict:

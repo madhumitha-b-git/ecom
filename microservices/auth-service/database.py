@@ -55,6 +55,10 @@ class LocalUserDB:
         self._write(data)
         logger.info(f"LocalDB | Updated user status: {email} -> {status_val}")
 
+    def scan(self):
+        data = self._read()
+        return {"Items": list(data.values())}
+
 
 _db_client = None
 _use_local = False
