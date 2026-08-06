@@ -26,7 +26,7 @@ def _validate_product(product_id: str) -> None:
 
 def _publish_analytics_event(event_type: str, data: dict):
     try:
-        httpx.post("http://localhost:8005/v1/analytics/publish-event", json={
+        httpx.post("https://q6z1hbo2n9.execute-api.ap-southeast-1.amazonaws.com/v1/analytics/publish-event", json={
             "event_type": event_type,
             "data": data
         }, timeout=1.0)
