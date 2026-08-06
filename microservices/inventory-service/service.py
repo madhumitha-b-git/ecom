@@ -55,7 +55,9 @@ def get_inventory(product_id: str) -> dict:
 def update_inventory(product_id: str, stock: int) -> dict:
     existing = get_table().get_item(Key={"inventory_id": product_id}).get("Item")
     if not existing:
-        raise InventoryNotFoundError()
+        get_table().put_item(Item={"inventory_id": product_id, "product_id": product_id, "stock": stock})
+        logger.info("DB | Inventory initialized: product_id=%s stock=%d", product_id, stock)
+        return {"message": "Stock Initialized"}
     get_table().update_item(
         Key={"inventory_id": product_id},
         UpdateExpression="SET stock = :s",
