@@ -454,6 +454,9 @@ function openProductDetail(productId) {
     state.selectedProductDetail = product;
     state.selectedCheckoutSize = product.sizes ? product.sizes[0] : null;
 
+    const stock = state.inventory[product.product_id] !== undefined ? state.inventory[product.product_id] : 10;
+    const isOutOfStock = stock === 0;
+
     let starsHtml = "";
     const fullStars = Math.floor(product.rating);
     for (let i = 0; i < 5; i++) {
@@ -496,7 +499,7 @@ function openProductDetail(productId) {
                 <div class="modal-admin-badge">
                     <i class="fa-solid fa-user-shield"></i> Admin View Only - Shopping Disabled
                 </div>
-            ` : (state.inventory[product.product_id] === 0 ? `
+            ` : isOutOfStock ? `
                 <button class="btn btn-secondary" style="margin-top: 15px; height: 50px; background: #666; cursor: not-allowed;" disabled>
                     <i class="fa-solid fa-ban"></i> Out of Stock
                 </button>
@@ -504,7 +507,7 @@ function openProductDetail(productId) {
                 <button class="btn" id="modal-add-to-cart-btn" style="margin-top: 15px; height: 50px;">
                     <i class="fa-solid fa-shopping-cart"></i> Add to Shopping Cart
                 </button>
-            `)}
+            `}
         </div>
     `;
 
@@ -521,7 +524,7 @@ function openProductDetail(productId) {
     }
 
     // Add to Cart Handler
-    if (state.currentUser.role !== 'admin' && state.inventory[product.product_id] > 0) {
+    if (state.currentUser.role !== 'admin' && !isOutOfStock) {
         document.getElementById("modal-add-to-cart-btn").addEventListener("click", () => {
             addToCart(product.product_id, 1, state.selectedCheckoutSize);
             views.productModal.classList.remove("active");
