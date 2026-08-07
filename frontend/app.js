@@ -595,11 +595,10 @@ function updateCartQuantity(cartId, delta) {
         }
     }
 
-    item.quantity += delta;
-    if (item.quantity <= 0) {
-        state.cart = state.cart.filter(i => i.cart_id !== cartId);
-        showToast("Item removed from cart.", "warning");
+    if (item.quantity + delta < 1) {
+        return;
     }
+    item.quantity += delta;
 
     renderCart();
     syncCartWithBackend();
@@ -823,6 +822,24 @@ document.getElementById("place-order-submit-btn").addEventListener("click", asyn
     const finalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const orderId = "order-" + Math.floor(100000 + Math.random() * 900000);
     const activePayType = document.querySelector(".payment-tab.active").dataset.payType;
+    
+    if (activePayType === "card") {
+        const num = document.getElementById("card-num-input").value.trim();
+        const name = document.getElementById("card-name-input").value.trim();
+        const exp = document.getElementById("card-expiry-input").value.trim();
+        const cvv = document.getElementById("card-cvv-input").value.trim();
+        if (!num || !name || !exp || !cvv) {
+            showToast("Please fill in all card details.", "warning");
+            return;
+        }
+    } else if (activePayType === "netbanking") {
+        const selectedBank = document.querySelector(".bank-option.selected");
+        if (!selectedBank) {
+            showToast("Please select a bank for NetBanking.", "warning");
+            return;
+        }
+    }
+
     const shippingName = document.getElementById("checkout-name").value.trim() || "Jane Doe";
     const shippingAddress = document.getElementById("checkout-address").value.trim() || "123 Main St, Singapore 189720";
     const phone = document.getElementById("checkout-phone") ? document.getElementById("checkout-phone").value.trim() : "";
@@ -1269,7 +1286,7 @@ async function renderAdminDashboard() {
                     phone: o.phone || "",
                     payment_method: o.payment_method || "",
                     status: o.status || "PENDING",
-                    timestamp: o.timestamp || new Date().toISOString()
+                    timestamp: o.timestamp ? o.timestamp : "Missing from backend"
                 }));
             }
         } catch (err) {
@@ -1309,6 +1326,21 @@ async function renderAdminDashboard() {
     if (state.apiMode === "live") {
         refreshAnalyticsData();
     }
+    
+    // Check inventory for alerts
+    let lowStock = 0;
+    let outOfStock = 0;
+    state.products.forEach(p => {
+        const stock = state.inventory[p.product_id] !== undefined ? state.inventory[p.product_id] : 10;
+        if (stock === 0) outOfStock++;
+        else if (stock < 5) lowStock++;
+    });
+    
+    if (outOfStock > 0) {
+        showToast(`ALERT: ${outOfStock} items are out of stock!`, "danger");
+    } else if (lowStock > 0) {
+        showToast(`ALERT: ${lowStock} items are low on stock!`, "warning");
+    }
 }
 
 // Admin Stats Dashboard Perspectives Toggling
@@ -1344,16 +1376,47 @@ async function refreshAnalyticsData() {
             document.getElementById("stat-aov").innerText = `₹${parseFloat(data.average_order_value || 0.0).toFixed(2)}`;
             
             const distList = document.getElementById("product-sales-distribution-list");
+            const chartContainer = document.getElementById("product-sales-chart-container");
+            const canvas = document.getElementById("sales-distribution-chart");
+            
             if (data.product_sales && Object.keys(data.product_sales).length > 0) {
-                distList.innerHTML = Object.entries(data.product_sales)
-                    .map(([pid, qty]) => `
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <span>Product ID: <strong>${pid}</strong></span>
-                            <span style="color: var(--primary); font-weight: bold;">${qty} units sold</span>
-                        </div>
-                    `).join("");
+                distList.style.display = "none";
+                chartContainer.style.display = "flex";
+                
+                if (window.salesDistChart) {
+                    window.salesDistChart.destroy();
+                }
+                
+                const labels = Object.keys(data.product_sales);
+                const values = Object.values(data.product_sales);
+                
+                window.salesDistChart = new Chart(canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: [
+                                '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { color: '#94a3b8' }
+                            }
+                        }
+                    }
+                });
             } else {
-                distList.innerHTML = "No sales recorded in S3 stage bucket yet.";
+                if(distList) distList.style.display = "block";
+                if(chartContainer) chartContainer.style.display = "none";
+                if(distList) distList.innerHTML = "No sales recorded in S3 stage bucket yet.";
             }
         }
     } catch (err) {
@@ -1508,7 +1571,7 @@ async function renderAdminOrders() {
                     phone: o.phone || "",
                     payment_method: o.payment_method || "",
                     status: o.status || "PENDING",
-                    timestamp: o.timestamp || new Date().toISOString()
+                    timestamp: o.timestamp ? o.timestamp : "Missing from backend"
                 }));
             }
         } catch (err) {
@@ -1522,14 +1585,28 @@ async function renderAdminOrders() {
     }
 
     // Sort orders descending
-    const sortedOrders = [...state.orders].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const sortedOrders = [...state.orders].sort((a,b) => {
+        const timeA = a.timestamp === "Missing from backend" ? 0 : new Date(a.timestamp).getTime();
+        const timeB = b.timestamp === "Missing from backend" ? 0 : new Date(b.timestamp).getTime();
+        return timeB - timeA;
+    });
 
     sortedOrders.forEach(o => {
-        const timeStr = new Date(o.timestamp).toLocaleString();
+        const timeStr = o.timestamp === "Missing from backend" ? o.timestamp : new Date(o.timestamp).toLocaleString();
         
-        const statuses = ["PENDING", "SHIPPED", "DELIVERED", "CANCELLED"];
+        let statuses = [];
+        let disabled = false;
+        if (o.status === "PENDING") {
+            statuses = ["PENDING", "SHIPPED", "CANCELLED"];
+        } else if (o.status === "SHIPPED") {
+            statuses = ["SHIPPED", "DELIVERED"];
+        } else {
+            statuses = [o.status];
+            disabled = true;
+        }
+        
         const selectHtml = `
-            <select class="order-status-select" data-order-id="${o.order_id}">
+            <select class="order-status-select" style="background: ${disabled ? 'rgba(0,0,0,0.2)' : 'var(--bg-card)'};" data-order-id="${o.order_id}" ${disabled ? 'disabled' : ''}>
                 ${statuses.map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
             </select>
         `;

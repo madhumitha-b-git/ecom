@@ -159,7 +159,7 @@
             <!-- Login Select Tabs -->
             <div style="display: flex; gap: 10px; margin-bottom: 25px;">
                 <button class="btn btn-secondary btn-full active" id="tab-user-login" style="border-radius: 10px; border-color: var(--primary);">User Account</button>
-                <button class="btn btn-secondary btn-full" id="tab-admin-login" style="border-radius: 10px;">Admin Console</button>
+                <button class="btn btn-secondary btn-full d-none" id="tab-admin-login" style="border-radius: 10px;">Admin Console</button>
             </div>
 
             <form id="login-form">
@@ -314,6 +314,11 @@
                             </div>
                             <div id="product-sales-distribution-list" style="padding: 15px; color: var(--text-secondary);">
                                 No sales data recorded yet.
+                            </div>
+                            <div id="product-sales-chart-container" style="padding: 10px; display: none; align-items: center; justify-content: center;">
+                                <div style="position: relative; height: 220px; width: 100%; display: flex; justify-content: center;">
+                                    <canvas id="sales-distribution-chart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
