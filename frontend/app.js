@@ -264,6 +264,16 @@ function showView(viewName) {
     // Show selected view
     views[viewName].classList.remove("d-none");
 
+    // Hide global header on login page
+    const globalHeader = document.querySelector("header");
+    if (globalHeader) {
+        globalHeader.style.display = (viewName === "login") ? "none" : "block";
+    }
+    const promoBar = document.querySelector(".promo-bar");
+    if (promoBar) {
+        promoBar.style.display = (viewName === "login") ? "none" : "flex";
+    }
+
     // Remove active styles from header tabs
     document.getElementById("nav-shop-btn").classList.remove("active");
     document.getElementById("nav-user-orders-btn").classList.remove("active");
@@ -2576,10 +2586,15 @@ window.addEventListener("DOMContentLoaded", () => {
         drawSalesReportChart(30);
     });
 
-    // Route view based on auth state at startup (always show storefront by default)
-    showView("storefront");
-    if (state.currentUser.role === "admin") {
-        renderAdminDashboard();
+    // Route view based on auth state at startup
+    if (state.currentUser.token) {
+        if (state.currentUser.role === "admin") {
+            showView("admin");
+        } else {
+            showView("storefront");
+        }
+    } else {
+        showView("login");
     }
 });
 
