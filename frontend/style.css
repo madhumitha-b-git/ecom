@@ -1,4 +1,4 @@
-﻿/* style.css - Premium Modern E-Commerce Stylesheet */
+/* style.css - Premium Modern E-Commerce Stylesheet */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
@@ -504,6 +504,65 @@ header {
     padding: 30px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     animation: fadeIn 0.4s ease-out;
+}
+
+.auth-container {
+    max-width: 420px;
+    width: 90%;
+    margin: 80px auto;
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px 35px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.05);
+    animation: fadeIn 0.4s ease-out;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.auth-subtitle {
+    color: var(--text-secondary);
+    margin-top: 8px;
+    font-size: 15px;
+}
+
+.form-group {
+    margin-bottom: 22px;
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.form-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text-primary);
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-input:focus {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+    outline: none;
+    transform: translateY(-2px);
 }
 
 .close-btn {
@@ -1710,7 +1769,7 @@ body.light-theme .card-preview-container .digital-card {
 
 .split-left {
     flex: 1 1 50%;
-    background: linear-gradient(135deg, var(--bg-card), var(--primary));
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(245, 158, 11, 0.4)), url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=2000') center/cover no-repeat;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1718,35 +1777,51 @@ body.light-theme .card-preview-container .digital-card {
     padding: 40px;
     text-align: center;
     color: white;
+    position: relative;
+    box-shadow: inset -15px 0 30px rgba(0,0,0,0.5);
 }
 
 .split-left h1 {
-    font-size: 42px;
-    font-weight: 800;
+    font-size: 54px;
+    font-weight: 900;
     margin-bottom: 20px;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    letter-spacing: -1px;
 }
 
 .split-left p {
-    font-size: 18px;
-    opacity: 0.9;
-    max-width: 400px;
+    font-size: 19px;
+    font-weight: 300;
+    opacity: 0.95;
+    max-width: 450px;
     line-height: 1.6;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
 
 .split-features {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
     text-align: left;
 }
 
 .split-features span {
     font-size: 16px;
-    background: rgba(0,0,0,0.2);
-    padding: 10px 15px;
-    border-radius: 8px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 15px 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.split-features span:hover {
+    transform: translateX(10px);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .split-right {
@@ -1764,4 +1839,21 @@ body.light-theme .card-preview-container .digital-card {
     .split-right {
         flex: 1 1 100%;
     }
+}
+
+/* Premium Login Button Override */
+#login-view .btn-full {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    color: white;
+}
+#login-view .btn-full:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(245, 158, 11, 0.4);
 }
