@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="style.css?v=2.1">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF & AutoTable for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -230,6 +233,21 @@
 
     <!-- View: Admin Dashboard Console -->
     <section class="container view-section d-none" id="admin-view">
+        <div class="admin-topbar">
+            <h2 style="margin: 0; font-size: 24px; font-weight: 700;"><i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> Admin Portal</h2>
+            <div class="admin-notifications" style="position: relative;">
+                <button class="btn btn-secondary" id="admin-bell-btn" style="border-radius: 50%; padding: 10px 14px; position: relative;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge" id="admin-bell-badge" style="position: absolute; top: -5px; right: -5px; background: var(--danger); font-size: 10px; display: none;">0</span>
+                </button>
+                <div class="notification-dropdown d-none" id="admin-bell-dropdown">
+                    <h4 style="margin: 0; padding: 15px; border-bottom: 1px solid var(--glass-border); font-size: 14px;">Recent Alerts</h4>
+                    <ul id="admin-bell-list" style="list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto;">
+                        <li style="padding: 15px; text-align: center; color: var(--text-muted); font-size: 13px;">No new notifications</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
         <div class="admin-layout">
             <!-- Sidebar Navigation -->
             <aside class="admin-sidebar">
@@ -476,6 +494,7 @@
                                         <th>Amount</th>
                                         <th>Status</th>
                                         <th>Timestamp</th>
+                                        <th>Report</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>

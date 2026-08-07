@@ -1857,3 +1857,54 @@ body.light-theme .card-preview-container .digital-card {
     transform: translateY(-3px);
     box-shadow: 0 15px 25px rgba(245, 158, 11, 0.4);
 }
+
+/* Admin Notifications & Topbar */
+.admin-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
+    padding: 15px 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid var(--glass-border);
+}
+.notification-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 320px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 2000;
+}
+.admin-bell-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--glass-border);
+    font-size: 13px;
+    transition: background 0.2s;
+    cursor: default;
+}
+.admin-bell-item:last-child {
+    border-bottom: none;
+}
+.admin-bell-item:hover {
+    background: var(--bg-tertiary);
+}
+.admin-bell-item strong {
+    display: block;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+}
+.admin-bell-item span {
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+.admin-bell-item.low-stock strong {
+    color: var(--danger);
+}
+.admin-bell-item.new-order strong {
+    color: var(--success);
+}

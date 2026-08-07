@@ -181,6 +181,7 @@ const state = {
     cart: [],
     orders: [],
     payments: [],
+    alerts: [],
     currentUser: {
         username: "Guest",
         role: "user"
@@ -360,12 +361,10 @@ async function fetchAndRenderProducts() {
             
             // Sync inventory for all products
             try {
-                await Promise.all(state.products.map(async p => {
-                    const inv = await apiCall("inventory", `/inventory/${p.product_id}`);
-                    if (inv && inv.stock !== undefined) {
-                        state.inventory[p.product_id] = inv.stock;
-                    }
-                }));
+                const data = await apiCall("inventory", "/inventory");
+                if (data) {
+                    state.inventory = data;
+                }
             } catch (err) {
                 console.error("Failed to sync live inventory during catalog load", err);
             }
@@ -1496,28 +1495,32 @@ async function renderAdminInventory() {
 
     if (state.apiMode === "live") {
         try {
-            await Promise.all(state.products.map(async p => {
-                const inv = await apiCall("inventory", `/inventory/${p.product_id}`);
-                if (inv && inv.stock !== undefined) {
-                    state.inventory[p.product_id] = inv.stock;
-                }
-            }));
+            const data = await apiCall("inventory", "/inventory");
+            if (data) {
+                state.inventory = data;
+            }
         } catch (err) {
             console.error("Failed to sync live inventory", err);
         }
     }
 
+    // Clear low stock alerts before repopulating
+    state.alerts = state.alerts.filter(a => a.type !== 'low-stock');
+
     state.products.forEach(p => {
-        const stock = state.inventory[p.product_id] !== undefined ? state.inventory[p.product_id] : 10;
+        const qty = state.inventory[p.product_id] !== undefined ? state.inventory[p.product_id] : 10;
         
-        let badgeClass = "badge-success";
-        let statusText = "In Stock";
-        if (stock === 0) {
-            badgeClass = "badge-danger";
-            statusText = "Out of Stock";
-        } else if (stock < 5) {
-            badgeClass = "badge-warning";
-            statusText = "Low Stock";
+        const status = (qty > 10) ? 'In Stock' : (qty > 0) ? 'Low Stock' : 'Out of Stock';
+        const badgeClass = (qty > 10) ? 'success' : (qty > 0) ? 'warning' : 'danger';
+        
+        // Push low stock alerts
+        if (qty <= 5) {
+            state.alerts.push({
+                type: 'low-stock',
+                icon: 'fa-triangle-exclamation',
+                title: 'Low Stock Alert',
+                message: `${p.name} has only ${qty} units left!`
+            });
         }
 
         const tr = document.createElement("tr");
@@ -1527,12 +1530,12 @@ async function renderAdminInventory() {
             <td>₹${p.price.toFixed(2)}</td>
             <td>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <strong style="font-size: 16px; min-width: 40px; color: var(--text-primary);">${stock}</strong>
-                    <input type="number" min="0" value="${stock}" class="form-input" style="width: 70px; padding: 4px 8px; margin: 0; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);" id="input-stock-${p.product_id}">
+                    <strong style="font-size: 16px; min-width: 40px; color: var(--text-primary);">${qty}</strong>
+                    <input type="number" min="0" value="${qty}" class="form-input" style="width: 70px; padding: 4px 8px; margin: 0; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);" id="input-stock-${p.product_id}">
                     <button class="btn btn-primary" style="padding: 4px 10px; font-size: 12px; margin: 0; border-radius: 4px;" onclick="updateLocalStock('${p.product_id}')">Update</button>
                 </div>
             </td>
-            <td><span class="badge ${badgeClass}">${statusText}</span></td>
+            <td><span class="badge badge-${badgeClass}">${status}</span></td>
         `;
 
         tbody.appendChild(tr);
@@ -1601,6 +1604,19 @@ async function renderAdminOrders() {
         return timeB - timeA;
     });
 
+    // Populate alerts for recent orders
+    state.alerts = state.alerts.filter(a => a.type !== 'new-order'); // clear old
+    sortedOrders.slice(0, 3).forEach(o => {
+        if(o.status === "PENDING") {
+            state.alerts.push({
+                type: 'new-order',
+                icon: 'fa-box',
+                title: 'New Order Received',
+                message: `Order ${o.order_id} for ${o.user_id}`
+            });
+        }
+    });
+
     sortedOrders.forEach(o => {
         const timeStr = o.timestamp === "Missing from backend" ? o.timestamp : new Date(o.timestamp).toLocaleString();
         
@@ -1635,6 +1651,7 @@ async function renderAdminOrders() {
             <td>₹${o.amount.toFixed(2)}</td>
             <td><span class="badge badge-${o.status === 'DELIVERED' ? 'success' : o.status === 'CANCELLED' ? 'danger' : o.status === 'SHIPPED' ? 'accent' : 'warning'}">${o.status}</span></td>
             <td>${timeStr}</td>
+            <td><button class="btn btn-secondary btn-sm" onclick="downloadOrderPDF('${o.order_id}')" title="Download Report"><i class="fa-solid fa-file-pdf" style="color: var(--danger);"></i></button></td>
             <td>${selectHtml}</td>
         `;
 
@@ -2648,3 +2665,95 @@ async function renderAdminUsers() {
     }
 }
 // Trigger pipeline run 1
+
+// --- Admin Features: Notifications & PDF Reports ---
+window.downloadOrderPDF = function(orderId) {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        showToast("PDF Library not loaded.", "danger");
+        return;
+    }
+    const order = state.orders.find(o => o.order_id === orderId);
+    if (!order) {
+        showToast("Order details not found.", "danger");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(217, 119, 6); // Primary Color
+    doc.text("ShopEase - Order Receipt", 14, 20);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(Generated on: , 14, 28);
+    
+    // Order details
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text("Order Information", 14, 40);
+    
+    const timeStr = order.timestamp === "Missing from backend" ? order.timestamp : new Date(order.timestamp).toLocaleString();
+    
+    doc.autoTable({
+        startY: 45,
+        theme: 'striped',
+        headStyles: { fillColor: [217, 119, 6] },
+        head: [['Field', 'Details']],
+        body: [
+            ['Order ID', order.order_id],
+            ['Customer', order.shipping_name || order.user_id],
+            ['Contact', order.phone || 'N/A'],
+            ['Address', order.shipping_address || 'N/A'],
+            ['Product', ${order.name} ],
+            ['Quantity', order.quantity.toString()],
+            ['Total Amount', ₹],
+            ['Status', order.status],
+            ['Date', timeStr]
+        ]
+    });
+    
+    // Footer
+    const finalY = doc.lastAutoTable.finalY || 150;
+    doc.setFontSize(10);
+    doc.setTextColor(150);
+    doc.text("Thank you for shopping with ShopEase!", 14, finalY + 15);
+    
+    // Save
+    doc.save(ShopEase_Order_.pdf);
+    showToast("PDF Report downloaded!", "success");
+};
+
+function updateNotificationBellUI() {
+    const badge = document.getElementById("admin-bell-badge");
+    const list = document.getElementById("admin-bell-list");
+    if (!badge || !list) return;
+    
+    const alerts = state.alerts || [];
+    if (alerts.length > 0) {
+        badge.style.display = 'block';
+        badge.textContent = alerts.length;
+        list.innerHTML = alerts.map(a => 
+            <li class="admin-bell-item ">
+                <strong><i class="fa-solid "></i> </strong>
+                <span></span>
+            </li>
+        ).join('');
+    } else {
+        badge.style.display = 'none';
+        list.innerHTML = <li style="padding: 15px; text-align: center; color: var(--text-muted); font-size: 13px;">No new notifications</li>;
+    }
+}
+
+// Toggle notification dropdown
+document.addEventListener("DOMContentLoaded", () => {
+    const bellBtn = document.getElementById("admin-bell-btn");
+    if (bellBtn) {
+        bellBtn.addEventListener("click", () => {
+            const dropdown = document.getElementById("admin-bell-dropdown");
+            if (dropdown) dropdown.classList.toggle("d-none");
+        });
+    }
+});
