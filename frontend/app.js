@@ -361,10 +361,12 @@ async function fetchAndRenderProducts() {
             
             // Sync inventory for all products
             try {
-                const data = await apiCall("inventory", "/inventory");
-                if (data) {
-                    state.inventory = data;
-                }
+                await Promise.all(state.products.map(async p => {
+                    const inv = await apiCall("inventory", `/inventory/${p.product_id}`);
+                    if (inv && inv.stock !== undefined) {
+                        state.inventory[p.product_id] = inv.stock;
+                    }
+                }));
             } catch (err) {
                 console.error("Failed to sync live inventory during catalog load", err);
             }
@@ -1495,10 +1497,12 @@ async function renderAdminInventory() {
 
     if (state.apiMode === "live") {
         try {
-            const data = await apiCall("inventory", "/inventory");
-            if (data) {
-                state.inventory = data;
-            }
+            await Promise.all(state.products.map(async p => {
+                const inv = await apiCall("inventory", `/inventory/${p.product_id}`);
+                if (inv && inv.stock !== undefined) {
+                    state.inventory[p.product_id] = inv.stock;
+                }
+            }));
         } catch (err) {
             console.error("Failed to sync live inventory", err);
         }
