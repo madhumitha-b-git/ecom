@@ -2688,7 +2688,7 @@ window.downloadOrderPDF = function(orderId) {
     
     doc.setFontSize(12);
     doc.setTextColor(100);
-    doc.text(Generated on: , 14, 28);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
     
     // Order details
     doc.setFontSize(14);
@@ -2707,9 +2707,9 @@ window.downloadOrderPDF = function(orderId) {
             ['Customer', order.shipping_name || order.user_id],
             ['Contact', order.phone || 'N/A'],
             ['Address', order.shipping_address || 'N/A'],
-            ['Product', ${order.name} ],
+            ['Product', `${order.name} ${order.size ? '(' + order.size + ')' : ''}`],
             ['Quantity', order.quantity.toString()],
-            ['Total Amount', ₹],
+            ['Total Amount', `₹${order.amount.toFixed(2)}`],
             ['Status', order.status],
             ['Date', timeStr]
         ]
@@ -2722,7 +2722,7 @@ window.downloadOrderPDF = function(orderId) {
     doc.text("Thank you for shopping with ShopEase!", 14, finalY + 15);
     
     // Save
-    doc.save(ShopEase_Order_.pdf);
+    doc.save(`ShopEase_Order_${order.order_id}.pdf`);
     showToast("PDF Report downloaded!", "success");
 };
 
@@ -2735,15 +2735,15 @@ function updateNotificationBellUI() {
     if (alerts.length > 0) {
         badge.style.display = 'block';
         badge.textContent = alerts.length;
-        list.innerHTML = alerts.map(a => 
-            <li class="admin-bell-item ">
-                <strong><i class="fa-solid "></i> </strong>
-                <span></span>
+        list.innerHTML = alerts.map(a => `
+            <li class="admin-bell-item ${a.type}">
+                <strong><i class="fa-solid ${a.icon}"></i> ${a.title}</strong>
+                <span>${a.message}</span>
             </li>
-        ).join('');
+        `).join('');
     } else {
         badge.style.display = 'none';
-        list.innerHTML = <li style="padding: 15px; text-align: center; color: var(--text-muted); font-size: 13px;">No new notifications</li>;
+        list.innerHTML = `<li style="padding: 15px; text-align: center; color: var(--text-muted); font-size: 13px;">No new notifications</li>`;
     }
 }
 
