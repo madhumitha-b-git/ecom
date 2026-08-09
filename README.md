@@ -82,6 +82,7 @@ The frontend application (`/frontend`) is built utilizing cutting-edge web desig
 ## 🚀 CI/CD Pipelines (GitHub Actions)
 
 *   **Service-Level Pipelines:** Individual GitHub Actions workflows (`.github/workflows/`) for each microservice (`auth-service.yml`, `order-service.yml`, etc.).
+*   **Automated Unit Testing:** Comprehensive unit testing suites (e.g., `test_product.py`) are automatically executed via CI runners on every commit to ensure robust code coverage and prevent regressions before deployment.
 *   **Validation:** Executes automated CI validation prior to merging.
 
 ---
