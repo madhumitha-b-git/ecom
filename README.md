@@ -19,7 +19,7 @@ A production-grade, event-driven, serverless e-commerce microservices platform b
 ## 🔗 Live URLs (For Mentor Evaluation)
 
 *   **GitHub Repository:** [https://github.com/madhumitha-b-git/ecom](https://github.com/madhumitha-b-git/ecom)
-*   **CloudFront Live URL:** `[INSERT CLOUDFRONT URL HERE]` 
+*   **CloudFront Live URL:** https://d1r2j7yy09n0mr.cloudfront.net/ 
 
 ---
 
