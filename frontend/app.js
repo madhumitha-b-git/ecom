@@ -1,4 +1,4 @@
-﻿// app.js - E-Commerce Core Frontend logic
+// app.js - E-Commerce Core Frontend logic
 
 // --- Default Mock Data ---
 const DEFAULT_PRODUCTS = [
@@ -1304,12 +1304,8 @@ async function renderAdminDashboard() {
             console.error("Dashboard: Failed to sync orders", err);
         }
         try {
-            const [livePayments, liveOrders] = await Promise.all([
-                apiCall("payment", "/payments"),
-                apiCall("order", "/orders")
-            ]);
-            
-            if (livePayments && liveOrders) {
+            const livePayments = await apiCall("payment", "/payments");
+            if (livePayments) {
                 
                 const paymentsMap = new Map();
                 
@@ -1878,12 +1874,8 @@ async function renderAdminPayments() {
 
     if (state.apiMode === "live") {
         try {
-            const [livePayments, liveOrders] = await Promise.all([
-                apiCall("payment", "/payments"),
-                apiCall("order", "/orders")
-            ]);
-            
-            if (livePayments && liveOrders) {
+            const livePayments = await apiCall("payment", "/payments");
+            if (livePayments) {
                 
                 const paymentsMap = new Map();
                 
