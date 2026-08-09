@@ -120,5 +120,5 @@ python -m http.server 8000
 ---
 
 ## 👨‍💻 Project Maintainer
-**Developer:** Madhumitha
+**Developer:** Madhumitha B
 **Repository:** [https://github.com/madhumitha-b-git/ecom](https://github.com/madhumitha-b-git/ecom)
