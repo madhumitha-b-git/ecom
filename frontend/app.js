@@ -1304,9 +1304,26 @@ async function renderAdminDashboard() {
             console.error("Dashboard: Failed to sync orders", err);
         }
         try {
-            const livePayments = await apiCall("payment", "/payments");
-            if (livePayments) {
-                state.payments = livePayments.map(p => ({
+            const [livePayments, liveOrders] = await Promise.all([
+                apiCall("payment", "/payments"),
+                apiCall("order", "/orders")
+            ]);
+            
+            if (livePayments && liveOrders) {
+                const validOrderIds = new Set(liveOrders.map(o => o.order_id));
+                const paymentsMap = new Map();
+                
+                livePayments.forEach(p => {
+                    // Ignore spam/phantom payments without a valid order
+                    if (!validOrderIds.has(p.order_id)) return;
+                    
+                    // Deduplicate multiple payment entries per order (keep latest)
+                    if (!paymentsMap.has(p.order_id) || new Date(p.timestamp || 0) > new Date(paymentsMap.get(p.order_id).timestamp || 0)) {
+                        paymentsMap.set(p.order_id, p);
+                    }
+                });
+                
+                state.payments = Array.from(paymentsMap.values()).map(p => ({
                     payment_id: p.payment_id || `pay-${p.order_id}`,
                     order_id: p.order_id,
                     amount: p.amount,
@@ -1316,7 +1333,7 @@ async function renderAdminDashboard() {
                 }));
             }
         } catch (err) {
-            console.error("Dashboard: Failed to sync payments", err);
+            console.error("Failed to sync live payments", err);
         }
     }
 
@@ -1861,9 +1878,26 @@ async function renderAdminPayments() {
 
     if (state.apiMode === "live") {
         try {
-            const livePayments = await apiCall("payment", "/payments");
-            if (livePayments) {
-                state.payments = livePayments.map(p => ({
+            const [livePayments, liveOrders] = await Promise.all([
+                apiCall("payment", "/payments"),
+                apiCall("order", "/orders")
+            ]);
+            
+            if (livePayments && liveOrders) {
+                const validOrderIds = new Set(liveOrders.map(o => o.order_id));
+                const paymentsMap = new Map();
+                
+                livePayments.forEach(p => {
+                    // Ignore spam/phantom payments without a valid order
+                    if (!validOrderIds.has(p.order_id)) return;
+                    
+                    // Deduplicate multiple payment entries per order (keep latest)
+                    if (!paymentsMap.has(p.order_id) || new Date(p.timestamp || 0) > new Date(paymentsMap.get(p.order_id).timestamp || 0)) {
+                        paymentsMap.set(p.order_id, p);
+                    }
+                });
+                
+                state.payments = Array.from(paymentsMap.values()).map(p => ({
                     payment_id: p.payment_id || `pay-${p.order_id}`,
                     order_id: p.order_id,
                     amount: p.amount,
