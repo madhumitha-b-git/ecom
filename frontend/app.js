@@ -1,4 +1,4 @@
-// app.js - E-Commerce Core Frontend logic
+﻿// app.js - E-Commerce Core Frontend logic
 
 // --- Default Mock Data ---
 const DEFAULT_PRODUCTS = [
@@ -437,7 +437,7 @@ async function fetchAndRenderProducts() {
                     <span>(${p.rating_count})</span>
                 </div>
                 <div class="product-footer">
-                    <span class="product-price">₹${p.price.toFixed(2)}</span>
+                    <span class="product-price">â‚¹${p.price.toFixed(2)}</span>
                     <button class="add-to-cart-quick" data-id="${p.product_id}" title="Quick View"><i class="fa-solid fa-eye"></i></button>
                 </div>
             </div>
@@ -501,7 +501,7 @@ function openProductDetail(productId) {
                 <span class="stars">${starsHtml}</span>
                 <span style="color: var(--text-secondary);">(${product.rating} stars / ${product.rating_count} reviews)</span>
             </div>
-            <div class="detail-price">₹${product.price.toFixed(2)}</div>
+            <div class="detail-price">â‚¹${product.price.toFixed(2)}</div>
             <p class="detail-desc">${product.description}</p>
             
             ${sizeSelectorHtml}
@@ -646,7 +646,7 @@ function renderCart() {
             <div class="cart-item-details">
                 <h4 class="cart-item-name">${item.name}</h4>
                 <div class="cart-item-meta">${item.size ? `Size: ${item.size}` : 'Standard Edition'}</div>
-                <div class="cart-item-price">₹${item.price.toFixed(2)}</div>
+                <div class="cart-item-price">â‚¹${item.price.toFixed(2)}</div>
                 <div class="cart-item-controls">
                     <div style="display: flex; align-items: center;">
                         <button class="qty-btn" onclick="updateCartQuantity('${item.cart_id}', -1)">-</button>
@@ -661,7 +661,7 @@ function renderCart() {
     });
 
     document.getElementById("cart-item-count").innerText = totalCount;
-    document.getElementById("cart-total-value").innerText = `₹${totalPrice.toFixed(2)}`;
+    document.getElementById("cart-total-value").innerText = `â‚¹${totalPrice.toFixed(2)}`;
 
     if (state.cart.length === 0) {
         container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px 0;"><i class="fa-solid fa-cart-shopping" style="font-size: 40px; margin-bottom: 12px; opacity: 0.3;"></i><p>Your cart is empty.</p></div>`;
@@ -718,8 +718,8 @@ function openCheckout() {
     let totalPrice = 0;
     state.cart.forEach(i => totalPrice += i.price * i.quantity);
 
-    document.getElementById("checkout-subtotal").innerText = `₹${totalPrice.toFixed(2)}`;
-    document.getElementById("checkout-total").innerText = `₹${totalPrice.toFixed(2)}`;
+    document.getElementById("checkout-subtotal").innerText = `â‚¹${totalPrice.toFixed(2)}`;
+    document.getElementById("checkout-total").innerText = `â‚¹${totalPrice.toFixed(2)}`;
 
     // Populate checkout names automatically from the user's session profile
     if (state.currentUser && state.currentUser.name) {
@@ -763,7 +763,7 @@ cardInputs.num.addEventListener("input", (e) => {
         e.target.value = val;
     }
 
-    document.getElementById("card-preview-number").innerText = e.target.value || "•••• •••• •••• ••••";
+    document.getElementById("card-preview-number").innerText = e.target.value || "â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢";
 });
 
 cardInputs.name.addEventListener("input", (e) => {
@@ -1246,7 +1246,7 @@ function drawSalesReportChart(daysLimit = 30) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return `₹${context.parsed.y.toFixed(2)}`;
+                            return `â‚¹${context.parsed.y.toFixed(2)}`;
                         }
                     },
                     backgroundColor: isLight ? "rgba(255, 255, 255, 0.9)" : "rgba(0, 0, 0, 0.8)",
@@ -1268,7 +1268,7 @@ function drawSalesReportChart(daysLimit = 30) {
                     grid: { color: gridColor },
                     ticks: {
                         color: textColor,
-                        callback: function(value) { return '₹' + value; }
+                        callback: function(value) { return 'â‚¹' + value; }
                     },
                     beginAtZero: true,
                     suggestedMax: Math.max(...dataPoints, 100)
@@ -1310,12 +1310,12 @@ async function renderAdminDashboard() {
             ]);
             
             if (livePayments && liveOrders) {
-                const validOrderIds = new Set(liveOrders.map(o => o.order_id));
+                
                 const paymentsMap = new Map();
                 
                 livePayments.forEach(p => {
-                    // Ignore spam/phantom payments without a valid order
-                    if (!validOrderIds.has(p.order_id)) return;
+                    
+                    
                     
                     // Deduplicate multiple payment entries per order (keep latest)
                     if (!paymentsMap.has(p.order_id) || new Date(p.timestamp || 0) > new Date(paymentsMap.get(p.order_id).timestamp || 0)) {
@@ -1343,9 +1343,9 @@ async function renderAdminDashboard() {
 
     const uniqueOrders = new Set(state.orders.map(o => o.order_id));
     
-    document.getElementById("stat-revenue").innerText = `₹${totalRev.toFixed(2)}`;
+    document.getElementById("stat-revenue").innerText = `â‚¹${totalRev.toFixed(2)}`;
     document.getElementById("stat-orders").innerText = uniqueOrders.size;
-    document.getElementById("stat-aov").innerText = `₹${(uniqueOrders.size > 0 ? totalRev / uniqueOrders.size : 0.0).toFixed(2)}`;
+    document.getElementById("stat-aov").innerText = `â‚¹${(uniqueOrders.size > 0 ? totalRev / uniqueOrders.size : 0.0).toFixed(2)}`;
     
     setTimeout(() => {
         drawSalesReportChart(currentPeriodDays);
@@ -1399,9 +1399,9 @@ async function refreshAnalyticsData() {
     try {
         const data = await apiCall("analytics", "/analytics/company/revenue");
         if (data && data.total_revenue !== undefined) {
-            document.getElementById("stat-revenue").innerText = `₹${parseFloat(data.total_revenue || 0.0).toFixed(2)}`;
+            document.getElementById("stat-revenue").innerText = `â‚¹${parseFloat(data.total_revenue || 0.0).toFixed(2)}`;
             document.getElementById("stat-orders").innerText = data.total_orders || 0;
-            document.getElementById("stat-aov").innerText = `₹${parseFloat(data.average_order_value || 0.0).toFixed(2)}`;
+            document.getElementById("stat-aov").innerText = `â‚¹${parseFloat(data.average_order_value || 0.0).toFixed(2)}`;
             
             const distList = document.getElementById("product-sales-distribution-list");
             const chartContainer = document.getElementById("product-sales-chart-container");
@@ -1548,7 +1548,7 @@ async function renderAdminInventory() {
         tr.innerHTML = `
             <td><strong>${p.name}</strong></td>
             <td>${p.category}</td>
-            <td>₹${p.price.toFixed(2)}</td>
+            <td>â‚¹${p.price.toFixed(2)}</td>
             <td>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <strong style="font-size: 16px; min-width: 40px; color: var(--text-primary);">${qty}</strong>
@@ -1664,12 +1664,12 @@ async function renderAdminOrders() {
             <td>
                 <strong>${o.user_id}</strong>
                 ${o.shipping_name ? `<br><small style="color: var(--text-secondary);">${o.shipping_name}</small>` : ''}
-                ${o.phone ? `<br><small style="color: var(--text-secondary);">📞 ${o.phone}</small>` : ''}
-                ${o.shipping_address ? `<br><small style="color: var(--text-muted); font-size: 11px;">📍 ${o.shipping_address}</small>` : ''}
+                ${o.phone ? `<br><small style="color: var(--text-secondary);">ðŸ“ž ${o.phone}</small>` : ''}
+                ${o.shipping_address ? `<br><small style="color: var(--text-muted); font-size: 11px;">ðŸ“ ${o.shipping_address}</small>` : ''}
             </td>
             <td>${o.name} ${o.size ? `(${o.size})` : ''}</td>
             <td>${o.quantity}</td>
-            <td>₹${o.amount.toFixed(2)}</td>
+            <td>â‚¹${o.amount.toFixed(2)}</td>
             <td><span class="badge badge-${o.status === 'DELIVERED' ? 'success' : o.status === 'CANCELLED' ? 'danger' : o.status === 'SHIPPED' ? 'accent' : 'warning'}">${o.status}</span></td>
             <td>${timeStr}</td>
             <td><button class="btn btn-secondary btn-sm" onclick="downloadOrderPDF('${o.order_id}')" title="Download Report"><i class="fa-solid fa-file-pdf" style="color: var(--danger);"></i></button></td>
@@ -1715,7 +1715,7 @@ function renderAdminProducts() {
             <td><img src="${p.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;"></td>
             <td><strong>${p.name}</strong></td>
             <td>${p.category}</td>
-            <td>₹${p.price.toFixed(2)}</td>
+            <td>â‚¹${p.price.toFixed(2)}</td>
             <td class="actions-cell">
                 <button class="icon-btn edit-product-btn" data-id="${p.product_id}" title="Edit Product"><i class="fa-solid fa-pen"></i></button>
                 <button class="icon-btn delete delete-product-btn" data-id="${p.product_id}" title="Delete Product"><i class="fa-solid fa-trash"></i></button>
@@ -1884,12 +1884,12 @@ async function renderAdminPayments() {
             ]);
             
             if (livePayments && liveOrders) {
-                const validOrderIds = new Set(liveOrders.map(o => o.order_id));
+                
                 const paymentsMap = new Map();
                 
                 livePayments.forEach(p => {
-                    // Ignore spam/phantom payments without a valid order
-                    if (!validOrderIds.has(p.order_id)) return;
+                    
+                    
                     
                     // Deduplicate multiple payment entries per order (keep latest)
                     if (!paymentsMap.has(p.order_id) || new Date(p.timestamp || 0) > new Date(paymentsMap.get(p.order_id).timestamp || 0)) {
@@ -1924,7 +1924,7 @@ async function renderAdminPayments() {
         tr.innerHTML = `
             <td><code>${p.payment_id}</code></td>
             <td><code>${p.order_id}</code></td>
-            <td style="font-weight: 700; color: var(--success);">₹${p.amount.toFixed(2)}</td>
+            <td style="font-weight: 700; color: var(--success);">â‚¹${p.amount.toFixed(2)}</td>
             <td><span class="badge badge-accent">${p.method}</span></td>
             <td><span class="badge badge-success">${p.status}</span></td>
             <td>${timeStr}</td>
@@ -2006,7 +2006,7 @@ async function renderUserOrders() {
                         <h4 class="user-order-name">${item.name}</h4>
                         <div class="user-order-meta">${item.size ? `Size: ${item.size}` : 'Standard Edition'} &times; ${item.quantity}</div>
                     </div>
-                    <div style="font-weight: 600;">₹${item.amount.toFixed(2)}</div>
+                    <div style="font-weight: 600;">â‚¹${item.amount.toFixed(2)}</div>
                 </div>
             `;
         });
@@ -2069,7 +2069,7 @@ async function renderUserOrders() {
             ${shippingDetailsHtml}
             <div class="user-order-price-qty">
                 <span style="color: var(--text-secondary);">Total Paid:</span>
-                <span class="user-order-total">₹${totalAmount.toFixed(2)}</span>
+                <span class="user-order-total">â‚¹${totalAmount.toFixed(2)}</span>
             </div>
             ${timelineHtml}
         `;
@@ -2484,7 +2484,7 @@ function renderWishlist() {
                     <span class="product-category">${p.category}</span>
                     <h3 class="product-name">${p.name}</h3>
                     <div class="product-footer" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                    <span class="product-price">₹${p.price.toFixed(2)}</span>
+                    <span class="product-price">â‚¹${p.price.toFixed(2)}</span>
                         <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px; margin: 0; border-radius: 6px;" onclick="event.stopPropagation(); addToCartFromWishlist('${p.product_id}')">Add to Cart</button>
                     </div>
                 </div>
@@ -2747,7 +2747,7 @@ window.downloadOrderPDF = function(orderId) {
             ['Address', order.shipping_address || 'N/A'],
             ['Product', `${order.name} ${order.size ? '(' + order.size + ')' : ''}`],
             ['Quantity', order.quantity.toString()],
-            ['Total Amount', `₹${order.amount.toFixed(2)}`],
+            ['Total Amount', `â‚¹${order.amount.toFixed(2)}`],
             ['Status', order.status],
             ['Date', timeStr]
         ]
