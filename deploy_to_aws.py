@@ -68,8 +68,10 @@ def deploy():
                     print(f"[SUCCESS] Successfully deployed {service}!")
                 else:
                     print(f"[ERROR] Failed to deploy {service}: {result.stderr}")
+                    sys.exit(1)
             else:
                 print(f"[ERROR] Failed: deploy.zip was not generated for {service}")
+                sys.exit(1)
 
 if __name__ == "__main__":
     deploy()
