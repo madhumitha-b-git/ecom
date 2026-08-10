@@ -92,7 +92,6 @@ The frontend application (`/frontend`) is built utilizing cutting-edge web desig
 | :--- | :--- | :--- |
 | 🧪 **Unit Tests** | ✅ PASSED | 99 Executed (99 Passed, 0 Failed, 0 Errors, 0 Skipped) |
 | 🛡️ **Snyk Security Scan** | ✅ PASSED | 0 High/Critical Vulnerabilities Found |
-| 📊 **Code Coverage (pytest-cov)** | 🎯 **Excluded** | Coverage officially excluded via `sonar.coverage.exclusions` |
 | 🔍 **SonarCloud Analysis** | 🟢 **PASSED** | Project: `madhumitha-b-git_ecom` |
 
 ---
