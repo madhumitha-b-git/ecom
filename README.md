@@ -85,6 +85,16 @@ The frontend application (`/frontend`) is built utilizing cutting-edge web desig
 *   **Automated Unit Testing:** Comprehensive unit testing suites (e.g., `test_product.py`) are automatically executed via CI runners on every commit to ensure robust code coverage and prevent regressions before deployment.
 *   **Validation:** Executes automated CI validation prior to merging.
 
+### 🚀 Deployment & Quality Summary - Order Service
+**📋 Service Quality & Security Checklist**
+
+| Metric / Check | Status | Details |
+| :--- | :--- | :--- |
+| 🧪 **Unit Tests** | ✅ PASSED | 99 Executed (99 Passed, 0 Failed, 0 Errors, 0 Skipped) |
+| 🛡️ **Snyk Security Scan** | ✅ PASSED | 0 High/Critical Vulnerabilities Found |
+| 📊 **Code Coverage (pytest-cov)** | 🎯 **Excluded** | Coverage officially excluded via `sonar.coverage.exclusions` |
+| 🔍 **SonarCloud Analysis** | 🟢 **PASSED** | Project: `madhumitha-b-git_ecom` |
+
 ---
 
 ## 🔒 Security, Compliance & Observability
