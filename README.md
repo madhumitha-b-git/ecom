@@ -96,6 +96,12 @@ The frontend application (`/frontend`) is built utilizing cutting-edge web desig
 
 ---
 
+## 📊 Advanced Analytics & Data Lake Integration
+
+*   **Company Perspective (Revenue & Sales):** Continuously aggregates raw `order_status_update` events to calculate Total Revenue, Average Order Value (AOV), and track top-selling products by volume.
+*   **Customer Perspective (Cart Abandonment):** Intelligently correlates `cart_action` events with successful orders to track user drop-off. Carts that remain unpurchased past the timeout threshold are automatically flagged as abandoned to highlight UI friction points.
+*   **Engineering Perspective (SLA & TAT):** Calculates mission-critical backend reliability metrics. It tracks the Turn Around Time (TAT) from order creation to final fulfillment, and calculates the overall SLA Success Rate to ensure the distributed microservice pipeline is maintaining 100% operational uptime.
+
 ## 🏃 Local Setup & Testing Commands
 
 ### Prerequisites
